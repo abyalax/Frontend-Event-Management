@@ -1,0 +1,34 @@
+services:
+  postgres:
+    container_name: postgres_nuxt 
+    image: pgvector/pgvector:pg15
+    restart: no
+    environment:
+      POSTGRES_USER: boilerplate_nuxt
+      POSTGRES_PASSWORD: boilerplate_nuxt
+      POSTGRES_DB: db_boilerplate_nuxt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boilerplate_nuxt -d db_boilerplate_nuxt"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit_nuxt
+    ports:
+      - "${MAILPIT_SMTP_PORT}:1025"
+      - "${MAILPIT_UI_PORT}:8025"
+    environment:
+      - MP_MAX_MESSAGES=${MAILPIT_MAX_MESSAGES}
+      - MP_SMTP_AUTH_ACCEPT_ANY=${MAILPIT_SMTP_AUTH_ACCEPT_ANY}
+    volumes:
+      - mailpit_data:/var/lib/mailpit/data
+
+volumes:
+  postgres_data:
+  mailpit_data:
