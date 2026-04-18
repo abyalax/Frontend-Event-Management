@@ -1,34 +1,23 @@
-// Type definitions for Auth layer
-// Auto-imported from app/composables/types.ts
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: "user" | "admin";
-  createdAt: string;
-}
+import type { User } from '~/layers/users/app/types';
 
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: User;
-}
-
 export interface RegisterData {
+  name: string;
   email: string;
   password: string;
-  name: string;
 }
 
 export interface AuthState {
-  user: User | null;
-  token: string | null;
+  user?: User;
   isAuthenticated: boolean;
-  loadingAuth: boolean;
-  error: string | null;
+  error?: string;
+}
+
+export interface Response<T> {
+  message: string;
+  data: T;
 }

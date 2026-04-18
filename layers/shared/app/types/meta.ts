@@ -33,9 +33,27 @@ export const metaRequestSchema = z.object({
 
 export interface MetaRequest<E = undefined> extends Pagination, Sorting<E>, GlobalFilter {}
 
-export interface MetaResponse {
-  page: number;
-  per_page: number;
-  total_count: number;
-  total_pages: number;
+export interface Paginated<T> {
+  data: T[];
+  meta: {
+    itemsPerPage: number;
+    totalItems?: number;
+    currentPage?: number;
+    totalPages?: number;
+    sortBy: [string, SortOrder][];
+    searchBy: string[];
+    search: string;
+    select: string[];
+    filter?: {
+      [column: string]: string | string[];
+    };
+    cursor?: string;
+  };
+  links: {
+    first?: string;
+    previous?: string;
+    current: string;
+    next?: string;
+    last?: string;
+  };
 }

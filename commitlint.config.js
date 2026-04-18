@@ -19,7 +19,7 @@ export default {
       ],
     ],
     'subject-case': [2, 'always', 'lower-case'],
-    'subject-max-length': [2, 'always', 90],
-    'body-max-line-length': [2, 'always', 100],
+    'subject-max-length': [2, 'always', 110],
+    'body-max-line-length': [2, 'always', 110],
   },
 };

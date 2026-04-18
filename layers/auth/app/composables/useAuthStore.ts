@@ -1,113 +1,86 @@
-// Pinia store for Auth
-// Auto-imported from app/composables/useAuthStore.ts
+import { defineStore } from 'pinia';
+import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
+import type { TResponse } from '~/layers/shared/app/types/response';
+import type { User } from '~/layers/users/app/types';
+import type { AuthState } from './types';
 
-import { defineStore } from "pinia";
-import type { AuthState } from "./types";
+const createInitialState = (): AuthState => ({
+  user: undefined,
+  isAuthenticated: false,
+});
 
-export const useAuthStore = defineStore("auth", () => {
-  const state = ref<AuthState>({
-    user: null,
-    token: null,
-    isAuthenticated: false,
-    loadingAuth: false,
-    error: null,
-  });
+export const useAuthStore = defineStore('auth', () => {
+  const state = ref<AuthState>(createInitialState());
 
-  const authApi = useAuthApi();
-
-  // Getters
   const user = computed(() => state.value.user);
   const isAuthenticated = computed(() => state.value.isAuthenticated);
-  const isLoading = computed(() => state.value.loadingAuth);
 
-  // Actions
-  async function login(email: string, password: string) {
-    state.value.loadingAuth = true;
-    state.value.error = null;
+  const setUser = (user: User) => {
+    state.value.user = user;
+    state.value.isAuthenticated = true;
+    state.value.error = undefined;
+  };
 
+  const setAuthenticated = (authenticated: boolean) => {
+    state.value.isAuthenticated = authenticated;
+  };
+
+  const clearAuth = () => {
+    Object.assign(state.value, createInitialState());
+  };
+
+  const clearError = () => {
+    state.value.error = undefined;
+  };
+
+  function hydrateFromStorage() {
+    const userJson = localStorage.getItem('auth_user');
+
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        setUser(user);
+      } catch {
+        clearAuth();
+        localStorage.removeItem('auth_user');
+      }
+    }
+  }
+
+  const refreshToken = async () => {
     try {
-      const { token, user: loginUser } = await authApi.login({
-        email,
-        password,
+      await $fetch<TResponse>(ENDPOINT.REFRESH, {
+        method: 'POST',
+        credentials: 'include',
       });
-
-      state.value.token = token;
-      state.value.user = loginUser;
-      state.value.isAuthenticated = true;
-
-      // Store token (implement based on your needs)
-      localStorage.setItem("auth_token", token);
-
-      return loginUser;
     } catch (error) {
-      state.value.error = String(error);
+      clearAuth();
       throw error;
-    } finally {
-      state.value.loadingAuth = false;
     }
-  }
+  };
 
-  async function logout() {
-    try {
-      await authApi.logout();
-    } finally {
-      state.value.user = null;
-      state.value.token = null;
-      state.value.isAuthenticated = false;
-      localStorage.removeItem("auth_token");
+  watch(
+    () => state.value.user,
+    (newUser) => {
+      if (newUser) {
+        localStorage.setItem('auth_user', JSON.stringify(newUser));
+      } else {
+        localStorage.removeItem('auth_user');
+      }
     }
-  }
-
-  async function register(name: string, email: string, password: string) {
-    state.value.loadingAuth = true;
-    state.value.error = null;
-
-    try {
-      const { token, user: newUser } = await authApi.register({
-        name,
-        email,
-        password,
-      });
-
-      state.value.token = token;
-      state.value.user = newUser;
-      state.value.isAuthenticated = true;
-
-      localStorage.setItem("auth_token", token);
-
-      return newUser;
-    } catch (error) {
-      state.value.error = String(error);
-      throw error;
-    } finally {
-      state.value.loadingAuth = false;
-    }
-  }
-
-  async function checkAuth() {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      return;
-    }
-
-    state.value.token = token;
-    const user = await authApi.verifyToken();
-    if (user) {
-      state.value.user = user;
-      state.value.isAuthenticated = true;
-    }
-  }
+  );
 
   return {
     // State
     user,
     isAuthenticated,
-    isLoading,
 
     // Actions
-    login,
-    logout,
-    register,
-    checkAuth,
+    setUser,
+    setAuthenticated,
+    clearAuth,
+    clearError,
+    hydrateFromStorage,
+    refreshToken,
   };
 });

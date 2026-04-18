@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/color-mode',
     '@nuxt/test-utils/module',
+    '@peterbud/nuxt-query',
   ],
 
   shadcn: {
@@ -56,7 +57,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || '/api',
+      API_URL: process.env.NUXT_PUBLIC_API_URL,
     },
   },
 
