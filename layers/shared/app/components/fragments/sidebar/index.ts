@@ -1,10 +1,11 @@
-import { HelpCircle, LayoutDashboard, Settings } from "lucide-vue-next";
-import type { Component } from "vue";
+import { LayoutDashboard, Settings, User2 } from 'lucide-vue-next';
+import type { Component } from 'vue';
+import { PERMISSIONS } from '../../../common/const/permission';
 
-export { default as Sidebar } from "./AppSidebar.vue";
-export { default as SidebarGroup } from "./AppSidebarGroup.vue";
-export { default as SidebarUser } from "./AppSidebarUser.vue";
-export { default as SignOutDialog } from "./SignOutDialog.vue";
+export { default as Sidebar } from './AppSidebar.vue';
+export { default as SidebarGroup } from './AppSidebarGroup.vue';
+export { default as SidebarUser } from './AppSidebarUser.vue';
+export { default as SignOutDialog } from './SignOutDialog.vue';
 
 export interface MenuItem {
   title: string;
@@ -12,7 +13,7 @@ export interface MenuItem {
   icon: Component;
   badge?: {
     count: number;
-    variant: "default" | "destructive" | "secondary" | "outline";
+    variant: 'default' | 'destructive' | 'secondary' | 'outline';
   };
   submenu?: MenuItem[];
   permissions: string[];
@@ -35,13 +36,19 @@ export interface SidebarAppProps {
 
 export const sidebarItems = (): MenuGroup[] => [
   {
-    group: "General",
+    group: 'General',
     items: [
       {
-        title: "Dashboard",
-        url: "/dashboard",
+        title: 'Dashboard',
+        url: '/dashboard',
         icon: LayoutDashboard,
         permissions: [],
+      },
+      {
+        title: 'Users',
+        url: '/users',
+        icon: User2,
+        permissions: [PERMISSIONS.USER.CREATE],
       },
     ],
   },
@@ -49,14 +56,8 @@ export const sidebarItems = (): MenuGroup[] => [
 
 export const bottomItems: MenuItem[] = [
   {
-    title: "Help & Support",
-    url: "/help",
-    icon: HelpCircle,
-    permissions: [],
-  },
-  {
-    title: "Settings",
-    url: "/settings",
+    title: 'Settings',
+    url: '/dashboard',
     icon: Settings,
     permissions: [],
   },

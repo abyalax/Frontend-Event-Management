@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { PERMISSIONS } from '~/layers/shared/app/common/const/permission';
 import Page from '~~/layers/shared/app/components/layouts/Page.vue';
-import P from '~~/layers/shared/app/components/ui/typography/P.vue';
 
 definePageMeta({
   middleware: 'authorization',
@@ -21,7 +20,7 @@ const breadcrumbs = [
 <template>
   <Page title="Users" :breadcrumbs="breadcrumbs">
     <template #children>
-      <P class="text-white">Ini adalah content master data user page</P>
+      <TableUsers />
     </template>
   </Page>
 </template>

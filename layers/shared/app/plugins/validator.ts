@@ -35,7 +35,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     throw new Error('Environment validation failed. Check console for details.');
   }
-  console.info('✅ Environment variables validated successfully.');
 
   return {
     provide: {

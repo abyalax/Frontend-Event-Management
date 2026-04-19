@@ -1,0 +1,455 @@
+<script setup lang="ts" generic="T">
+import type { Cell, Header, PaginationState, SortingState, Updater } from '@tanstack/vue-table';
+import { FlexRender, getCoreRowModel, getExpandedRowModel, getFacetedRowModel, getFacetedUniqueValues, useVueTable } from '@tanstack/vue-table';
+import { useVirtualizer } from '@tanstack/vue-virtual';
+import { ArrowDown, ArrowUp, FunnelPlus } from 'lucide-vue-next';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { useScrollPosition } from '../composable/use-scroll-position';
+import { useCreateStickyColumnStyle } from '../composable/use-sticky-column-style';
+import { useCreateStickyHeaderStyle } from '../composable/use-sticky-header-style';
+import type { TableProps } from '../index';
+
+import { Button } from '~~/layers/shared/app/components/ui/button';
+import { Input } from '~~/layers/shared/app/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '~~/layers/shared/app/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '~~/layers/shared/app/components/ui/select';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '~~/layers/shared/app/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~~/layers/shared/app/components/ui/tooltip';
+
+import type { AcceptableValue } from 'reka-ui';
+import type { TableState } from '~/layers/shared/app/composable/filters';
+import BulkActions from './BulkActions.vue';
+import ColumnVisibilitySelector from './ColumnVisibilitySelector.vue';
+import FacetedFilter from './FacetedFilter.vue';
+import TablePagination from './TablePagination.vue';
+
+const props = withDefaults(defineProps<TableProps<T>>(), {
+  pagination: true,
+  perPageOptions: () => [
+    { label: '5 / page', value: 5 },
+    { label: '10 / page', value: 10 },
+    { label: '20 / page', value: 20 },
+    { label: '30 / page', value: 30 },
+    { label: '40 / page', value: 40 },
+    { label: '50 / page', value: 50 },
+    { label: '100 / page', value: 100 },
+  ],
+});
+
+const state = defineModel<TableState>({
+  required: true,
+});
+
+const computedData = computed(() => {
+  const result = props.data?.data ?? [];
+  return result;
+});
+
+const computedPagination = computed(() => {
+  const result = props.data?.meta;
+  return result;
+});
+
+const router = useRouter();
+const scrollRef = ref<HTMLElement | null>(null);
+const { scrollLeft, scrollTop } = useScrollPosition(scrollRef);
+
+const sorting = ref<SortingState>([]);
+const expanded = ref<Record<string, boolean>>({});
+const globalFilter = ref<AcceptableValue | undefined>(undefined);
+
+const pageIndex = computed(() => Number(state.value?.page ?? 1) - 1);
+const pageSize = computed(() => Number(state.value?.limit ?? 10));
+
+const selectedLabel = computed(() => props.perPageOptions?.find((opt) => opt.value.toString() === state.value?.limit?.toString()));
+
+const headerStickyStyle = useCreateStickyHeaderStyle<T, unknown>(props.freezeColumnIds ?? [], scrollTop.value);
+const bodyStickyStyle = useCreateStickyColumnStyle<T, unknown>(props.freezeColumnIds ?? []);
+
+const onPaginationChange = (updater: Updater<PaginationState>) => {
+  const next = typeof updater === 'function' ? updater({ pageIndex: pageIndex.value, pageSize: pageSize.value }) : updater;
+  state.value.page = next.pageIndex + 1;
+  state.value.limit = next.pageSize;
+  updateRoute();
+};
+
+const serverSearch = (value: AcceptableValue) => {
+  state.value.search = String(value || '');
+  state.value.page = 1;
+  updateRoute();
+  globalFilter.value = value;
+};
+
+const setExpanded = (updater: unknown) => {
+  expanded.value = typeof updater === 'function' ? updater(expanded.value) : updater;
+};
+
+const tableState = computed(() => ({
+  sorting: sorting.value,
+  expanded: expanded.value,
+  pagination: props.pagination
+    ? {
+        pageIndex: pageIndex.value,
+        pageSize: pageSize.value,
+      }
+    : undefined,
+  globalFilter: globalFilter.value,
+}));
+
+const table = useVueTable<T>({
+  columns: props.columns ?? [],
+  enableRowSelection: true,
+  enableMultiRowSelection: true,
+  enableGlobalFilter: true,
+  enableColumnFilters: true,
+  enableMultiSort: false,
+
+  getCoreRowModel: getCoreRowModel(),
+  getFacetedRowModel: getFacetedRowModel(),
+  getFacetedUniqueValues: getFacetedUniqueValues(),
+  getExpandedRowModel: getExpandedRowModel(),
+
+  manualPagination: true,
+  manualSorting: true,
+  manualFiltering: true,
+  pageCount: computedPagination.value?.totalPages,
+  onPaginationChange: props.pagination ? onPaginationChange : undefined,
+  onExpandedChange: setExpanded,
+  onGlobalFilterChange: serverSearch,
+
+  initialState: {
+    columnVisibility: props.initialColumnVisibility,
+    columnOrder: props.columnIds,
+    pagination: {
+      pageIndex: 0,
+      pageSize: 10,
+    },
+  },
+  state: tableState.value,
+  get data() {
+    return computedData.value;
+  },
+});
+
+const setGlobalFilter = (value: AcceptableValue) => {
+  serverSearch(value);
+};
+
+const handlePerPageChange = (value: AcceptableValue) => {
+  state.value.limit = Number(value);
+  updateRoute();
+};
+
+const handleSortClick = (header: Header<T, unknown>) => {
+  const column = header.column;
+  const currentSort = sorting.value.find((s) => s.id === column.id);
+
+  // state: undefined → asc
+  if (currentSort === undefined) {
+    sorting.value = [{ id: column.id, desc: false }];
+    state.value.sort_by = String(column.id);
+    state.value.sort_order = 'ASC';
+
+    updateRoute();
+    return;
+  }
+
+  // state: asc → desc
+  if (currentSort.desc === false) {
+    sorting.value = [{ id: column.id, desc: true }];
+    state.value.sort_by = String(column.id);
+    state.value.sort_order = 'DESC';
+
+    updateRoute();
+    return;
+  }
+
+  // state: desc → undefined (reset)
+  sorting.value = [];
+  state.value.sort_by = '';
+  state.value.sort_order = '';
+
+  updateRoute();
+};
+
+const updateRoute = () => {
+  router.push({
+    query: state.value as Omit<AcceptableValue, 'bigint'>,
+  });
+};
+
+const getHeaderForCell = (cell: Cell<T, unknown>): Header<T, unknown> => {
+  const header = table?.getHeaderGroups()?.[0]?.headers[cell.column.getIndex()];
+  if (!header) throw new Error(`Header not found for cell column ${cell.column.id}`);
+
+  return header;
+};
+
+const getSortTooltip = (sorted: false | 'asc' | 'desc'): string => {
+  if (sorted === false || sorted == null) return 'Sort Ascending';
+  if (sorted === 'asc') return 'Sort Descending';
+  if (sorted === 'desc') return 'Unsort by this column';
+  return 'Sort by this column';
+};
+
+const rowCount = computed(() => table.getRowModel().rows.length);
+const useVirtualization = computed(() => props.virtualizer && rowCount.value > props.virtualizer.virtualizeAt);
+
+const virtualizer = useVirtualizer({
+  count: rowCount.value,
+  getScrollElement: () => scrollRef.value,
+  estimateSize: () => 34,
+  overscan: 20,
+});
+
+watch(
+  () => globalFilter.value,
+  (value) => {
+    if (value !== undefined) table.setGlobalFilter(value);
+  }
+);
+
+onMounted(() => {
+  const route = useRoute();
+  state.value = {
+    ...state.value,
+    ...Object.fromEntries(Object.entries(route.query).map(([key, value]) => [key, String(value || '')])),
+  } as TableState;
+});
+</script>
+
+<template>
+  <main class="w-full flex flex-col gap-4">
+    <!-- Table Controls -->
+    <div class="flex items-end justify-between flex-wrap gap-3">
+      <div class="flex gap-4 flex-wrap">
+        <!-- Bulk Actions -->
+        <BulkActions v-if="props.bulkActions?.length" :table="table" :bulk-actions="props.bulkActions" />
+
+        <!-- Menu Filter -->
+        <Popover v-if="props.menufilter?.length">
+          <PopoverTrigger as-child>
+            <Button variant="outline" class="cursor-pointer">
+              <FunnelPlus class="w-4 h-4 mr-2" />
+              Filter
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" style="width: fit-content">
+            <div :class="`grid grid-cols-${props.menufilter.length > 1 ? 2 : 1} gap-2`">
+              <div v-for="(item, index) in props.menufilter" :key="index" class="col-span-1">
+                <component :is="item" />
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <!-- Search -->
+        <div class="flex gap-md items-center justify-center" style="width: 300px">
+          <Input placeholder="Search..." :model-value="(globalFilter as string) ?? ''" @update:model-value="setGlobalFilter" />
+        </div>
+
+        <!-- Faceted Filters -->
+        <template v-for="filter in props.facetedFilter" :key="String(filter.columnId)">
+          <FacetedFilter
+            v-if="table.getColumn(String(filter.columnId))"
+            :column="table.getColumn(String(filter.columnId))"
+            :title="filter.title"
+            :options="filter.options"
+          />
+        </template>
+      </div>
+
+      <!-- Top Actions -->
+      <div class="flex gap-2 items-end justify-end flex-wrap">
+        <component :is="props.topActions" v-if="props.topActions" />
+        <ColumnVisibilitySelector v-if="props.initialColumnVisibility" :table="table" :column-ids="props.columnIds" />
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-md border">
+      <div ref="scrollRef" class="overflow-x-auto overflow-y-scroll no-scrollbar max-h-[68vh] w-full rounded-md">
+        <div class="relative">
+          <Table>
+            <TableHeader class="rounded-md">
+              <TableRow
+                v-for="headerGroup in table.getHeaderGroups()"
+                :key="headerGroup.id"
+                class="cursor-pointer rounded-md bg-background hover:bg-accent/50 group/row"
+              >
+                <TableHead
+                  v-for="header in headerGroup.headers"
+                  :key="header.index"
+                  :col-span="header.colSpan"
+                  :style="headerStickyStyle(header, scrollLeft)"
+                  class="sticky-shadow h-14 cursor-pointer relative"
+                >
+                  <template v-if="header.column.accessorFn !== undefined">
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <div class="flex justify-between items-center w-full" @click="handleSortClick(header)">
+                          <template v-if="!header.isPlaceholder">
+                            <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                            <ArrowUp v-if="header.column.getIsSorted() === 'asc'" class="w-4 h-4 ml-2" />
+                            <ArrowDown v-else-if="header.column.getIsSorted() === 'desc'" class="w-4 h-4 ml-2" />
+                          </template>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent class="z-100">
+                        {{ getSortTooltip(header.column.getIsSorted()) }}
+                      </TooltipContent>
+                    </Tooltip>
+                  </template>
+                  <template v-else-if="!header.isPlaceholder">
+                    <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                  </template>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              <!-- Virtual Rows -->
+              <template v-if="useVirtualization">
+                <template v-for="virtualRow in virtualizer.getVirtualItems()" :key="virtualRow.key">
+                  <template v-for="(row, rowIndex) in [table.getRowModel().rows[virtualRow.index]]" :key="row?.id">
+                    <TableRow
+                      v-if="row"
+                      :key="row.id"
+                      :data-state="row.getIsSelected() && 'selected'"
+                      class="cursor-pointer bg-background hover:bg-secondary"
+                      :style="{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start - rowIndex * virtualRow.size}px)`,
+                      }"
+                      @click="props.onClickRow(row.original, $event)"
+                    >
+                      <TableCell
+                        v-for="cell in row.getVisibleCells()"
+                        :key="cell.id"
+                        :style="
+                          () => {
+                            const header = getHeaderForCell(cell);
+                            return bodyStickyStyle(header, scrollLeft, row.getIsSelected());
+                          }
+                        "
+                        class="sticky-shadow h-14 relative"
+                      >
+                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                      </TableCell>
+                    </TableRow>
+
+                    <!-- Expanded Row -->
+                    <TableRow v-if="row?.getIsExpanded() && props.expandedRow" :key="`expanded-${row.id}`" class="bg-muted">
+                      <TableCell :col-span="row.getVisibleCells().length" class="p-4">
+                        <component :is="props.expandedRow(row.original)" />
+                      </TableCell>
+                    </TableRow>
+                  </template>
+                </template>
+              </template>
+
+              <!-- Regular Rows -->
+              <template v-else>
+                <template v-for="row in table.getRowModel().rows" :key="row.id">
+                  <TableRow
+                    :data-state="row.getIsSelected() && 'selected'"
+                    class="bg-background hover:bg-accent/50 group/row"
+                    style="cursor: pointer"
+                    @click="props.onClickRow(row.original, $event)"
+                  >
+                    <TableCell
+                      v-for="cell in row.getVisibleCells()"
+                      :key="cell.id"
+                      :style="
+                        () => {
+                          const header = getHeaderForCell(cell);
+                          return bodyStickyStyle(header, scrollLeft, row.getIsSelected());
+                        }
+                      "
+                      class="sticky-shadow h-14 relative"
+                    >
+                      <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                    </TableCell>
+                  </TableRow>
+
+                  <!-- Expanded Row -->
+                  <TableRow v-if="row.getIsExpanded() && props.expandedRow" :key="`expanded-${row.id}`" class="bg-muted">
+                    <TableCell :col-span="row.getVisibleCells().length" class="p-4">
+                      <component :is="props.expandedRow(row.original)" />
+                    </TableCell>
+                  </TableRow>
+                </template>
+              </template>
+            </TableBody>
+
+            <!-- Table Footer -->
+            <TableFooter v-if="table.getFooterGroups().length > 0">
+              <TableRow v-for="footerGroup in table.getFooterGroups()" :key="footerGroup.id">
+                <TableHead
+                  v-for="header in footerGroup.headers"
+                  :key="header.index"
+                  :col-span="header.colSpan"
+                  :style="bodyStickyStyle(header, scrollLeft)"
+                  class="sticky-shadow h-14 cursor-pointer relative"
+                >
+                  <FlexRender :render="header.column.columnDef.footer" :props="header.getContext()" />
+                </TableHead>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="props.pagination" class="flex justify-end items-center mb-6">
+      <div class="flex gap-2">
+        <TablePagination
+          :total-pages="computedPagination?.totalPages || 1"
+          :current-page="computedPagination?.currentPage || 1"
+          @page-change="(page) => table.setPageIndex(page - 1)"
+          @next-page="table.nextPage"
+          @previous-page="table.previousPage"
+        />
+
+        <Select :model-value="state.limit" @update:model-value="handlePerPageChange">
+          <SelectTrigger class="w-32.5 h-8">
+            {{ selectedLabel?.label }}
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="option in props.perPageOptions" :key="option.value" :value="String(option.value)">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  </main>
+</template>
+
+<style scoped>
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.sticky-shadow {
+  position: relative;
+}
+
+.sticky-shadow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 1px;
+  height: 100%;
+  background: var(--sticky-shadow);
+  opacity: 0.1;
+}
+</style>

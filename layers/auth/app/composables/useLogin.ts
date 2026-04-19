@@ -24,7 +24,7 @@ export function useLogin() {
       toast.info(`Welcome back ${user.name}`);
       authStore.setUser(user);
       authStore.setAuthenticated(true);
-      router.push('/users');
+      router.push('/dashboard');
     },
     onError: (error: { data: TResponse }) => {
       const response = error?.data;

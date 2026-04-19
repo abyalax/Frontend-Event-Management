@@ -17,16 +17,9 @@ export const usePermission = () => {
   const has = (permissionKey?: string): boolean => {
     if (!authStore.isAuthenticated || !authStore.user) return false;
 
-    // Debug log
-    console.info('[usePermission] Checking permission:', permissionKey);
-    console.info('[usePermission] User data:', authStore.user);
-
     // Flatten all permissions from all roles
     const userPermissions = authStore.user.roles?.flatMap((role) => role.permissions?.map((p: Permission) => p.key) ?? []) ?? [];
-
-    console.info('[usePermission] User permissions:', userPermissions);
     const hasPermission = userPermissions.includes(permissionKey ?? '-');
-    console.info('[usePermission] Has permission:', hasPermission);
 
     return hasPermission;
   };

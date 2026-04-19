@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Users CRUD API E2E Tests
@@ -95,16 +95,16 @@ test.describe('Users CRUD API Endpoints', () => {
       expect(data).toHaveProperty('meta');
       expect(Array.isArray(data.items)).toBeTruthy();
       expect(data.meta).toHaveProperty('page');
-      expect(data.meta).toHaveProperty('per_page');
+      expect(data.meta).toHaveProperty('limit');
     });
 
     test('should support pagination parameters', async ({ request }) => {
-      const response = await request.get(`${API_BASE}?page=1&per_page=5`);
+      const response = await request.get(`${API_BASE}?page=1&limit=5`);
 
       expect(response.status()).toBe(200);
       const data = await response.json();
       expect(data.meta.page).toBe(1);
-      expect(data.meta.per_page).toBe(5);
+      expect(data.meta.limit).toBe(5);
     });
 
     test('should support search parameter', async ({ request }) => {
@@ -303,9 +303,9 @@ test.describe('Users CRUD API Endpoints', () => {
       expect(response.status()).toBe(200);
       const data = await response.json();
       expect(data.meta).toHaveProperty('page');
-      expect(data.meta).toHaveProperty('per_page');
+      expect(data.meta).toHaveProperty('limit');
       expect(typeof data.meta.page).toBe('number');
-      expect(typeof data.meta.per_page).toBe('number');
+      expect(typeof data.meta.limit).toBe('number');
     });
 
     test('single user response should include roles and permissions', async ({ request }) => {

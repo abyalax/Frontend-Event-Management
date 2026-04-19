@@ -8,15 +8,15 @@ definePageMeta({
 
 const breadcrumbs = [
   {
-    title: 'Users',
-    url: '/users',
-    active: false,
+    title: 'Dashboard',
+    url: '/dashboard',
+    active: true,
   },
 ];
 </script>
 
 <template>
-  <Page title="Users" :breadcrumbs="breadcrumbs">
+  <Page title="Dashboard" :breadcrumbs="breadcrumbs">
     <template #children>
       <P class="text-white">Ini adalah content dashboard</P>
     </template>

@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { Button } from '~/layers/shared/app/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/layers/shared/app/components/ui/form';
 
-const { mutate: login, isPending } = useLogin();
+const { mutate: mutateLogin, isPending } = useLogin();
 
 const loginSchema = toTypedSchema(
   z.object({
@@ -23,7 +23,7 @@ const form = useForm({
 });
 
 const onSubmit = form.handleSubmit((values) =>
-  login({
+  mutateLogin({
     email: values.email,
     password: values.password,
   })
