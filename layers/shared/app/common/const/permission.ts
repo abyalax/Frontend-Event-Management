@@ -1,6 +1,6 @@
 import type { Permission } from '~/layers/users/app/types';
 
-export const PERMISSIONS = {
+export const PERMISSIONS = Object.freeze({
   // User Management
   USER: {
     CREATE: 'user:create',
@@ -68,15 +68,7 @@ export const PERMISSIONS = {
     SEND: 'notification:send',
     READ: 'notification:read',
   },
-
-  // System (admin-only internal)
-  PERMISSION: {
-    CREATE: 'permission:create',
-    READ: 'permission:read',
-    UPDATE: 'permission:update',
-    DELETE: 'permission:delete',
-  },
-} as const;
+});
 
 export const permissionsList: Permission[] = [
   // User Management
