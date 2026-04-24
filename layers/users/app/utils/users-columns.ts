@@ -1,22 +1,21 @@
 import type { ColumnDef } from '@tanstack/vue-table';
 import { h } from 'vue';
-import { Checkbox } from '~/layers/shared/app/components/ui/checkbox';
 import ActionsCell from '../components/ActionsCell.vue';
 import RoleBadge from '../components/RoleBadge.vue';
 import type { User } from '../types';
+import CheckboxHeader from '~/layers/shared/app/components/fragments/input/CheckboxHeader.vue';
+import CheckboxCell from '~/layers/shared/app/components/fragments/input/CheckboxCell.vue';
 
 export const userColumns: ColumnDef<User>[] = [
   {
     id: 'select',
     header: (context) =>
-      h(Checkbox, {
-        checked: context.table.getIsAllPageRowsSelected(),
-        'onUpdate:checked': (checked: boolean) => context.table.toggleAllPageRowsSelected(checked),
+      h(CheckboxHeader, {
+        context: { table: context.table },
       }),
     cell: (context) =>
-      h(Checkbox, {
-        checked: context.row.getIsSelected(),
-        'onUpdate:checked': (checked: boolean) => context.row.toggleSelected(checked),
+      h(CheckboxCell, {
+        context: { row: context.row },
       }),
     enableSorting: false,
     enableHiding: false,
@@ -51,6 +50,6 @@ export const userColumns: ColumnDef<User>[] = [
   {
     id: 'actions',
     header: 'Actions',
-    cell: () => h(ActionsCell),
+    cell: ({ row }) => h(ActionsCell, { ...row.original }),
   },
 ];

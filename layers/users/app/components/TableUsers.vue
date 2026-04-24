@@ -7,6 +7,8 @@ import type { BulkAction, TableFacetedFilter } from '~~/layers/shared/app/compon
 import { useGetUsers } from '../composables/useGetUsers';
 import type { User } from '../types';
 
+const selected = ref<User[]>([]);
+
 const { queryParams, state } = useTableFilterUsers();
 
 const { data } = useGetUsers(queryParams);
@@ -42,7 +44,6 @@ const facetedFilters: TableFacetedFilter<User>[] = [
 
 const handleRowClick = (user: User, event?: MouseEvent) => {
   event?.stopPropagation();
-  console.info('Row clicked:', user, event);
 };
 
 const handleExpandedRow = (user: User) => {
@@ -56,7 +57,8 @@ const handleExpandedRow = (user: User) => {
 
 <template>
   <Table
-    v-model="state"
+    v-model:filter="state"
+    v-model:selected="selected"
     :data="data"
     :columns="userColumns"
     :column-ids="['select', 'name', 'email', 'roles', 'actions']"

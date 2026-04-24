@@ -1,22 +1,25 @@
-import { useMutation } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { toast } from 'vue-sonner';
 import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
+import { QUERY_KEY } from '~/layers/shared/app/common/const/querykey';
 import { useHttp } from '~/layers/shared/app/composable/useHttp';
 import type { TResponse } from '~/layers/shared/app/types/response';
-import type { CreateUserPayload, User } from '../types';
 
 export function useDeleteUser() {
   const http = useHttp();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: CreateUserPayload) => {
-      const response = await http<TResponse<User>>(ENDPOINT.USERS, {
+    mutationFn: async (id: string) => {
+      const response = await http<TResponse<boolean>>(`${ENDPOINT.USERS}/${id}`, {
         method: 'DELETE',
-        body: params,
       });
       return response;
     },
-    onSuccess: () => toast.info('Delete User Successfully'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS_LIST] });
+      toast.info('Delete User Successfully');
+    },
     onError: (error: { data: TResponse }) => {
       const response = error?.data;
       toast.warning(response?.message ?? 'Delete User Failed');

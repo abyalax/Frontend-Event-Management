@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, User2 } from 'lucide-vue-next';
+import { LayoutDashboard, Settings, User2, Album } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import { PERMISSIONS } from '../../../common/const/permission';
 
@@ -48,7 +48,13 @@ export const sidebarItems = (): MenuGroup[] => [
         title: 'Users',
         url: '/users',
         icon: User2,
-        permissions: [PERMISSIONS.USER.CREATE],
+        permissions: [PERMISSIONS.USER.READ],
+      },
+      {
+        title: 'Events',
+        url: '/events',
+        icon: Album,
+        permissions: [PERMISSIONS.EVENT.READ],
       },
     ],
   },

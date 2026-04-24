@@ -3,7 +3,7 @@ import type { Cell, Header, PaginationState, SortingState, Updater } from '@tans
 import { FlexRender, getCoreRowModel, getExpandedRowModel, getFacetedRowModel, getFacetedUniqueValues, useVueTable } from '@tanstack/vue-table';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { ArrowDown, ArrowUp, FunnelPlus } from 'lucide-vue-next';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useScrollPosition } from '../composable/use-scroll-position';
@@ -38,8 +38,13 @@ const props = withDefaults(defineProps<TableProps<T>>(), {
   ],
 });
 
-const state = defineModel<TableState>({
+const filter = defineModel<TableState>('filter', {
   required: true,
+});
+
+const selected = defineModel<Array<T>>('selected', {
+  required: false,
+  default: [],
 });
 
 const computedData = computed(() => {
@@ -60,24 +65,24 @@ const sorting = ref<SortingState>([]);
 const expanded = ref<Record<string, boolean>>({});
 const globalFilter = ref<AcceptableValue | undefined>(undefined);
 
-const pageIndex = computed(() => Number(state.value?.page ?? 1) - 1);
-const pageSize = computed(() => Number(state.value?.limit ?? 10));
+const pageIndex = computed(() => Number(filter.value?.page ?? 1) - 1);
+const pageSize = computed(() => Number(filter.value?.limit ?? 10));
 
-const selectedLabel = computed(() => props.perPageOptions?.find((opt) => opt.value.toString() === state.value?.limit?.toString()));
+const selectedLabel = computed(() => props.perPageOptions?.find((opt) => opt.value.toString() === filter.value?.limit?.toString()));
 
 const headerStickyStyle = useCreateStickyHeaderStyle<T, unknown>(props.freezeColumnIds ?? [], scrollTop.value);
 const bodyStickyStyle = useCreateStickyColumnStyle<T, unknown>(props.freezeColumnIds ?? []);
 
 const onPaginationChange = (updater: Updater<PaginationState>) => {
   const next = typeof updater === 'function' ? updater({ pageIndex: pageIndex.value, pageSize: pageSize.value }) : updater;
-  state.value.page = next.pageIndex + 1;
-  state.value.limit = next.pageSize;
+  filter.value.page = next.pageIndex + 1;
+  filter.value.limit = next.pageSize;
   updateRoute();
 };
 
 const serverSearch = (value: AcceptableValue) => {
-  state.value.search = String(value || '');
-  state.value.page = 1;
+  filter.value.search = String(value || '');
+  filter.value.page = 1;
   updateRoute();
   globalFilter.value = value;
 };
@@ -138,7 +143,7 @@ const setGlobalFilter = (value: AcceptableValue) => {
 };
 
 const handlePerPageChange = (value: AcceptableValue) => {
-  state.value.limit = Number(value);
+  filter.value.limit = Number(value);
   updateRoute();
 };
 
@@ -149,8 +154,8 @@ const handleSortClick = (header: Header<T, unknown>) => {
   // state: undefined → asc
   if (currentSort === undefined) {
     sorting.value = [{ id: column.id, desc: false }];
-    state.value.sort_by = String(column.id);
-    state.value.sort_order = 'ASC';
+    filter.value.sort_by = String(column.id);
+    filter.value.sort_order = 'ASC';
 
     updateRoute();
     return;
@@ -159,8 +164,8 @@ const handleSortClick = (header: Header<T, unknown>) => {
   // state: asc → desc
   if (currentSort.desc === false) {
     sorting.value = [{ id: column.id, desc: true }];
-    state.value.sort_by = String(column.id);
-    state.value.sort_order = 'DESC';
+    filter.value.sort_by = String(column.id);
+    filter.value.sort_order = 'DESC';
 
     updateRoute();
     return;
@@ -168,15 +173,15 @@ const handleSortClick = (header: Header<T, unknown>) => {
 
   // state: desc → undefined (reset)
   sorting.value = [];
-  state.value.sort_by = '';
-  state.value.sort_order = '';
+  filter.value.sort_by = '';
+  filter.value.sort_order = '';
 
   updateRoute();
 };
 
 const updateRoute = () => {
   router.push({
-    query: state.value as Omit<AcceptableValue, 'bigint'>,
+    query: filter.value as Omit<AcceptableValue, 'bigint'>,
   });
 };
 
@@ -211,10 +216,98 @@ watch(
   }
 );
 
+// Debug: Check table state
+console.info('Table initialized:', {
+  hasData: !!computedData.value,
+  dataLength: computedData.value?.length,
+  tableRows: table.getRowModel().rows.length,
+  columns: props.columns?.length,
+});
+
+nextTick(() => {
+  // Debug: Watch table data changes
+  watch(
+    () => computedData.value,
+    (newData) => {
+      console.info('Table data changed:', {
+        dataLength: newData?.length,
+        tableRows: table.getRowModel().rows.length,
+      });
+    },
+    { deep: true }
+  );
+
+  watch(
+    () => selected.value,
+    (newSelected) => {
+      console.info('=== SELECTION MODEL CHANGED ===');
+      console.info('New selected length:', newSelected.length);
+      console.info(
+        'New selected IDs:',
+        newSelected.map((row) => (row as T & { id?: string }).id)
+      );
+
+      const tableRows = table.getRowModel().rows;
+      console.info('Table rows available:', tableRows.length);
+
+      const newSelectedIds = new Set(newSelected.map((row) => (row as T & { id?: string }).id));
+
+      tableRows.forEach((row, index) => {
+        const rowId = (row.original as T & { id?: string }).id;
+        const shouldBeSelected = newSelectedIds.has(rowId);
+        const isCurrentlySelected = row.getIsSelected();
+
+        console.info(`Row ${index} (ID: ${rowId}):`, {
+          shouldBeSelected,
+          isCurrentlySelected,
+          willToggle: shouldBeSelected !== isCurrentlySelected,
+        });
+
+        if (shouldBeSelected !== isCurrentlySelected) {
+          console.info('TOGGLING row:', rowId);
+          row.toggleSelected(shouldBeSelected);
+        }
+      });
+    },
+    { deep: true }
+  );
+
+  watch(
+    () => table.getSelectedRowModel().rows,
+    (rows) => {
+      console.info('=== TABLE SELECTION CHANGED ===');
+      console.info('Selected rows count:', rows.length);
+      console.info(
+        'Selected row IDs:',
+        rows.map((row) => (row.original as T & { id?: string }).id)
+      );
+
+      const selectedRows = rows.map((row) => row.original);
+      selected.value = selectedRows;
+    },
+    { deep: true }
+  );
+
+  // Debug: Check initial state
+  setTimeout(() => {
+    console.info('=== INITIAL STATE CHECK ===');
+    console.info('Table rows:', table.getRowModel().rows.length);
+    console.info('Selected model:', selected.value.length);
+    console.info('Table selected:', table.getSelectedRowModel().rows.length);
+
+    table.getRowModel().rows.forEach((row, index) => {
+      console.info(`Row ${index}:`, {
+        id: (row.original as T & { id?: string }).id,
+        selected: row.getIsSelected(),
+      });
+    });
+  }, 1000);
+});
+
 onMounted(() => {
   const route = useRoute();
-  state.value = {
-    ...state.value,
+  filter.value = {
+    ...filter.value,
     ...Object.fromEntries(Object.entries(route.query).map(([key, value]) => [key, String(value || '')])),
   } as TableState;
 });
@@ -251,12 +344,12 @@ onMounted(() => {
         </div>
 
         <!-- Faceted Filters -->
-        <template v-for="filter in props.facetedFilter" :key="String(filter.columnId)">
+        <template v-for="faceted in props.facetedFilter" :key="String(faceted.columnId)">
           <FacetedFilter
-            v-if="table.getColumn(String(filter.columnId))"
-            :column="table.getColumn(String(filter.columnId))"
-            :title="filter.title"
-            :options="filter.options"
+            v-if="table.getColumn(String(faceted.columnId))"
+            :column="table.getColumn(String(faceted.columnId))"
+            :title="faceted.title"
+            :options="faceted.options"
           />
         </template>
       </div>
@@ -414,7 +507,7 @@ onMounted(() => {
           @previous-page="table.previousPage"
         />
 
-        <Select :model-value="state.limit" @update:model-value="handlePerPageChange">
+        <Select :model-value="filter.limit" @update:model-value="handlePerPageChange">
           <SelectTrigger class="w-32.5 h-8">
             {{ selectedLabel?.label }}
           </SelectTrigger>
