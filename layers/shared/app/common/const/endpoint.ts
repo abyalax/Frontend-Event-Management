@@ -4,4 +4,8 @@ export const ENDPOINT = Object.freeze({
   REFRESH: 'refresh',
 
   USERS: '/users',
+  EVENTS: '/events',
+  EVENTS_PUBLISH: '/events/publish',
+  EVENTS_PUBLIC: '/events/public',
+  EVENTS_PUBLIC_DETAIL: '/events/public',
 });

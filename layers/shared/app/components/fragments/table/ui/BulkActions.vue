@@ -30,7 +30,12 @@ const selectedRows = computed(() => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem v-for="action in bulkActions" :key="action.label" @click="action.onClick(selectedRows)">
+          <DropdownMenuItem
+            v-for="action in bulkActions"
+            :key="action.label"
+            :disabled="action.disabled?.(selectedRows)"
+            @click="!action.disabled?.(selectedRows) && action.onClick(selectedRows)"
+          >
             <component :is="action.icon" class="w-4 h-4 mr-2" />
             {{ action.label }}
           </DropdownMenuItem>

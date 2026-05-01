@@ -19,6 +19,7 @@ export interface BulkAction<T = unknown> {
   icon: Component;
   label: string;
   onClick: (selectedRows: T[]) => void;
+  disabled?: (selectedRows: T[]) => boolean;
 }
 
 export interface FacetedFilterOption {

@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
-import type { Cell, Header, PaginationState, SortingState, Updater } from '@tanstack/vue-table';
-import { FlexRender, getCoreRowModel, getExpandedRowModel, getFacetedRowModel, getFacetedUniqueValues, useVueTable } from '@tanstack/vue-table';
+import type { Cell, Header, PaginationState, Row, SortingState, Updater } from '@tanstack/vue-table';
+import { FlexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, useVueTable } from '@tanstack/vue-table';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { ArrowDown, ArrowUp, FunnelPlus } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -47,6 +47,44 @@ const selected = defineModel<Array<T>>('selected', {
   default: [],
 });
 
+const expanded = defineModel<Array<T>>('expanded', {
+  required: false,
+  default: [],
+});
+
+// Helper function to get unique row identifier
+const getRowId = (row: T): string | number => {
+  const rowWithId = row as T & { id?: string | number };
+  return rowWithId.id ?? JSON.stringify(row);
+};
+
+// Manual expansion functions
+const isRowExpanded = (row: T): boolean => {
+  if (!Array.isArray(expanded.value)) {
+    expanded.value = [];
+    return false;
+  }
+  const rowId = getRowId(row);
+  return expanded.value.some((item) => getRowId(item) === rowId);
+};
+
+const toggleRowExpansion = (row: T) => {
+  if (!Array.isArray(expanded.value)) expanded.value = [];
+  const rowId = getRowId(row);
+  const isExpanded = expanded.value.some((item) => getRowId(item) === rowId);
+
+  if (isExpanded) {
+    expanded.value = expanded.value.filter((item) => getRowId(item) !== rowId);
+  } else {
+    expanded.value = [...expanded.value, row];
+  }
+};
+
+const setExpanded = (updater: unknown) => {
+  const newExpanded = typeof updater === 'function' ? updater(expanded.value) : updater;
+  expanded.value = newExpanded as Array<T>;
+};
+
 const computedData = computed(() => {
   const result = props.data?.data ?? [];
   return result;
@@ -62,7 +100,6 @@ const scrollRef = ref<HTMLElement | null>(null);
 const { scrollLeft, scrollTop } = useScrollPosition(scrollRef);
 
 const sorting = ref<SortingState>([]);
-const expanded = ref<Record<string, boolean>>({});
 const globalFilter = ref<AcceptableValue | undefined>(undefined);
 
 const pageIndex = computed(() => Number(filter.value?.page ?? 1) - 1);
@@ -87,13 +124,8 @@ const serverSearch = (value: AcceptableValue) => {
   globalFilter.value = value;
 };
 
-const setExpanded = (updater: unknown) => {
-  expanded.value = typeof updater === 'function' ? updater(expanded.value) : updater;
-};
-
 const tableState = computed(() => ({
   sorting: sorting.value,
-  expanded: expanded.value,
   pagination: props.pagination
     ? {
         pageIndex: pageIndex.value,
@@ -114,7 +146,6 @@ const table = useVueTable<T>({
   getCoreRowModel: getCoreRowModel(),
   getFacetedRowModel: getFacetedRowModel(),
   getFacetedUniqueValues: getFacetedUniqueValues(),
-  getExpandedRowModel: getExpandedRowModel(),
 
   manualPagination: true,
   manualSorting: true,
@@ -185,10 +216,16 @@ const updateRoute = () => {
   });
 };
 
+const handleRowClick = (row: Row<T>, event: MouseEvent) => {
+  // Call the original onClickRow if provided
+  if (props.onClickRow) props.onClickRow(row.original, event);
+  // Toggle row expansion if expandedRow is provided
+  if (props.expandedRow) toggleRowExpansion(row.original);
+};
+
 const getHeaderForCell = (cell: Cell<T, unknown>): Header<T, unknown> => {
   const header = table?.getHeaderGroups()?.[0]?.headers[cell.column.getIndex()];
   if (!header) throw new Error(`Header not found for cell column ${cell.column.id}`);
-
   return header;
 };
 
@@ -216,55 +253,18 @@ watch(
   }
 );
 
-// Debug: Check table state
-console.info('Table initialized:', {
-  hasData: !!computedData.value,
-  dataLength: computedData.value?.length,
-  tableRows: table.getRowModel().rows.length,
-  columns: props.columns?.length,
-});
-
 nextTick(() => {
-  // Debug: Watch table data changes
-  watch(
-    () => computedData.value,
-    (newData) => {
-      console.info('Table data changed:', {
-        dataLength: newData?.length,
-        tableRows: table.getRowModel().rows.length,
-      });
-    },
-    { deep: true }
-  );
-
   watch(
     () => selected.value,
     (newSelected) => {
-      console.info('=== SELECTION MODEL CHANGED ===');
-      console.info('New selected length:', newSelected.length);
-      console.info(
-        'New selected IDs:',
-        newSelected.map((row) => (row as T & { id?: string }).id)
-      );
-
       const tableRows = table.getRowModel().rows;
-      console.info('Table rows available:', tableRows.length);
-
       const newSelectedIds = new Set(newSelected.map((row) => (row as T & { id?: string }).id));
 
-      tableRows.forEach((row, index) => {
+      tableRows.forEach((row) => {
         const rowId = (row.original as T & { id?: string }).id;
         const shouldBeSelected = newSelectedIds.has(rowId);
         const isCurrentlySelected = row.getIsSelected();
-
-        console.info(`Row ${index} (ID: ${rowId}):`, {
-          shouldBeSelected,
-          isCurrentlySelected,
-          willToggle: shouldBeSelected !== isCurrentlySelected,
-        });
-
         if (shouldBeSelected !== isCurrentlySelected) {
-          console.info('TOGGLING row:', rowId);
           row.toggleSelected(shouldBeSelected);
         }
       });
@@ -275,33 +275,11 @@ nextTick(() => {
   watch(
     () => table.getSelectedRowModel().rows,
     (rows) => {
-      console.info('=== TABLE SELECTION CHANGED ===');
-      console.info('Selected rows count:', rows.length);
-      console.info(
-        'Selected row IDs:',
-        rows.map((row) => (row.original as T & { id?: string }).id)
-      );
-
       const selectedRows = rows.map((row) => row.original);
       selected.value = selectedRows;
     },
     { deep: true }
   );
-
-  // Debug: Check initial state
-  setTimeout(() => {
-    console.info('=== INITIAL STATE CHECK ===');
-    console.info('Table rows:', table.getRowModel().rows.length);
-    console.info('Selected model:', selected.value.length);
-    console.info('Table selected:', table.getSelectedRowModel().rows.length);
-
-    table.getRowModel().rows.forEach((row, index) => {
-      console.info(`Row ${index}:`, {
-        id: (row.original as T & { id?: string }).id,
-        selected: row.getIsSelected(),
-      });
-    });
-  }, 1000);
 });
 
 onMounted(() => {
@@ -416,7 +394,7 @@ onMounted(() => {
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start - rowIndex * virtualRow.size}px)`,
                       }"
-                      @click="props.onClickRow(row.original, $event)"
+                      @click="handleRowClick(row, $event)"
                     >
                       <TableCell
                         v-for="cell in row.getVisibleCells()"
@@ -434,11 +412,17 @@ onMounted(() => {
                     </TableRow>
 
                     <!-- Expanded Row -->
-                    <TableRow v-if="row?.getIsExpanded() && props.expandedRow" :key="`expanded-${row.id}`" class="bg-muted">
-                      <TableCell :col-span="row.getVisibleCells().length" class="p-4">
-                        <component :is="props.expandedRow(row.original)" />
-                      </TableCell>
-                    </TableRow>
+                    <tr
+                      v-if="isRowExpanded(row?.original as T) && props.expandedRow"
+                      :key="`expanded-${getRowId(row?.original as T)}`"
+                      class="bg-muted"
+                    >
+                      <td :colspan="row?.getVisibleCells().length" class="p-0" style="width: 100%; padding: 0 !important">
+                        <div style="width: 100%; display: block">
+                          <component :is="props.expandedRow(row?.original as T)" />
+                        </div>
+                      </td>
+                    </tr>
                   </template>
                 </template>
               </template>
@@ -450,7 +434,7 @@ onMounted(() => {
                     :data-state="row.getIsSelected() && 'selected'"
                     class="bg-background hover:bg-accent/50 group/row"
                     style="cursor: pointer"
-                    @click="props.onClickRow(row.original, $event)"
+                    @click="handleRowClick(row, $event)"
                   >
                     <TableCell
                       v-for="cell in row.getVisibleCells()"
@@ -467,12 +451,14 @@ onMounted(() => {
                     </TableCell>
                   </TableRow>
 
-                  <!-- Expanded Row -->
-                  <TableRow v-if="row.getIsExpanded() && props.expandedRow" :key="`expanded-${row.id}`" class="bg-muted">
-                    <TableCell :col-span="row.getVisibleCells().length" class="p-4">
-                      <component :is="props.expandedRow(row.original)" />
-                    </TableCell>
-                  </TableRow>
+                  <!-- Expanded Row - Outside table structure -->
+                  <tr v-if="isRowExpanded(row.original) && props.expandedRow" :key="`expanded-${getRowId(row.original)}`" class="bg-muted">
+                    <td :colspan="row.getVisibleCells().length" class="p-0" style="width: 100%; padding: 0 !important">
+                      <div style="width: 100%; display: block">
+                        <component :is="props.expandedRow(row.original)" />
+                      </div>
+                    </td>
+                  </tr>
                 </template>
               </template>
             </TableBody>
@@ -544,5 +530,17 @@ onMounted(() => {
   height: 100%;
   background: var(--sticky-shadow);
   opacity: 0.1;
+}
+
+/* Force expanded row to take full width */
+.expanded-row-full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.expanded-row-full-width td {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 </style>

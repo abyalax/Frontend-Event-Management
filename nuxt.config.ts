@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   },
   ssr: false,
 
-  extends: ['./layers/shared', './layers/auth', './layers/users'],
+  extends: ['./layers/shared', './layers/auth', './layers/users', './layers/events'],
 
   css: ['~/layers/shared/app/assets/css/tailwind.css', 'vue-sonner/style.css'],
 
