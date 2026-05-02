@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { toast } from "vue-sonner";
-import ConfirmDialog from "../confirm/ConfirmDialog.vue";
+import ConfirmDialog from '../confirm/ConfirmDialog.vue';
 
-const open = defineModel<boolean>("open", { default: false });
-const handleAction = () => toast.info("This button is just cosmetics UI");
+const open = defineModel<boolean>('open', { default: false });
+const { $toast } = useNuxtApp();
+const handleAction = () => $toast.info('This button is just cosmetics UI');
 </script>
 
 <template>

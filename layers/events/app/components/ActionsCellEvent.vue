@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Eye } from 'lucide-vue-next';
 import { Button } from '~/layers/shared/app/components/ui/button';
+import { useDeleteEvent } from '../composables/useDeleteEvent';
 import type { Event } from '../types';
 
 const props = defineProps<Event>();

@@ -8,4 +8,10 @@ export const ENDPOINT = Object.freeze({
   EVENTS_PUBLISH: '/events/publish',
   EVENTS_PUBLIC: '/events/public',
   EVENTS_PUBLIC_DETAIL: '/events/public',
+
+  ORDERS: '/orders',
+  BUY_TICKET: '/orders/buy-ticket',
+  USER_ORDERS: '/orders/user/my-orders',
+
+  PAYMENT_WEBHOOK_INVOICE: '/payments/webhook/invoice',
 });

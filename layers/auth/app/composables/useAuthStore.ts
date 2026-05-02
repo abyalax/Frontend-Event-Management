@@ -3,6 +3,7 @@ import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
 import type { TResponse } from '~/layers/shared/app/types/response';
 import type { User } from '~/layers/users/app/types';
 import type { AuthState } from './types';
+import { computed, ref, watch } from 'vue';
 
 const createInitialState = (): AuthState => ({
   user: undefined,

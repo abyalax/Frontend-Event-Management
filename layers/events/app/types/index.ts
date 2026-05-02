@@ -60,4 +60,17 @@ export interface CreateEventPayload {
   bannerMediaId: string;
 }
 
+export interface Ticket {
+  id: string;
+  eventId: string;
+  name: string;
+  price: number;
+  quota: number;
+  sold: number;
+  pdfUrl?: string;
+  isUsed: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type UpdateEventPayload = Partial<CreateEventPayload>;

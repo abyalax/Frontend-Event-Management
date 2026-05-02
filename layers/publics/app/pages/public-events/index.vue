@@ -4,9 +4,11 @@ import { Button } from '~/layers/shared/app/components/ui/button';
 import { Input } from '~/layers/shared/app/components/ui/input';
 import { Badge } from '~/layers/shared/app/components/ui/badge';
 import { useTableFilter } from '~/layers/shared/app/composable/filters/useTableFilter';
-import StatusBadge from '../../../components/StatusBadge.vue';
-import { useGetPublicEvents } from '../../../composables/useGetPublicEvents';
-import type { Event as PublicEvent } from '../../../types';
+import { formatDate } from '~/layers/shared/app/utils/formatter';
+
+import { computed } from 'vue';
+import { navigateTo } from 'nuxt/app';
+import type { EventPublic } from '../../types';
 
 const { state, search, queryParams } = useTableFilter({
   debounceSearch: 500,
@@ -15,26 +17,14 @@ const { state, search, queryParams } = useTableFilter({
 
 const { data, isPending } = useGetPublicEvents(queryParams);
 
-const events = computed<PublicEvent[]>(() => data.value?.data ?? []);
+const events = computed<EventPublic[]>(() => data.value?.data ?? []);
 const meta = computed(() => data.value?.meta);
 const totalItems = computed(() => meta.value?.totalItems ?? events.value.length);
 
-const formatDate = (value?: string) => {
-  if (!value) return '-';
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-
-  return new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-};
-
 const featuredEvent = computed(() => events.value[0]);
 
-const openEventDetail = (event: PublicEvent) => {
-  return navigateTo(`/publics/events/${event.id}`);
+const openEventDetail = (event: EventPublic) => {
+  return navigateTo(`/public-events/${event.id}`);
 };
 
 const handleImageError = (event: Event) => {

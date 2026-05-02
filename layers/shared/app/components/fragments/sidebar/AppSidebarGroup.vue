@@ -2,7 +2,6 @@
 import { ChevronRight } from 'lucide-vue-next';
 import { usePermission } from '~/layers/auth/app/composables/usePermission';
 import type { MenuItem } from '.';
-import { cn } from '../../../lib/utils';
 import Badge from '../../ui/badge/Badge.vue';
 import {
   SidebarGroup,
@@ -17,6 +16,7 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
+import { cn } from '~/layers/shared/app/lib/utils';
 
 type Props = {
   section: {

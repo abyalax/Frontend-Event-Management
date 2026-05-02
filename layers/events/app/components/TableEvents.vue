@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { Send, Trash } from 'lucide-vue-next';
 import { h } from 'vue';
-import { Table } from '~/layers/shared/app/components/fragments/table';
-import type { BulkAction, TableFacetedFilter } from '~/layers/shared/app/components/fragments/table';
-import { useGetEvents } from '../composables/useGetEvents';
-import { usePublishEvents } from '../composables/usePublishEvents';
-import { useDeleteEvent } from '../composables/useDeleteEvent';
-import { useTableFilterEvents } from '../composables/useTableFilterEvents';
-import type { Event } from '../types';
-import { createEventColumns } from '../utils/events-columns';
-import RowEventDetail from './RowEventDetail.vue';
+import { Table, type BulkAction, type TableFacetedFilter } from '~/layers/shared/app/components/fragments/table';
+import { RowDetailEvents } from '~/layers/events/app/components';
+import type { Event } from '~/layers/events/app/types';
+import { createEventColumns } from '~/layers/events/app/utils/events-columns';
 
 const selected = ref<Event[]>([]);
 const expanded = ref<Event[]>([]);
@@ -65,7 +60,7 @@ const handleRowClick = (_event: Event, nativeEvent?: MouseEvent) => {
 };
 
 const handleExpandedRow = (event: Event) =>
-  h(RowEventDetail, {
+  h(RowDetailEvents, {
     event: event,
   });
 </script>

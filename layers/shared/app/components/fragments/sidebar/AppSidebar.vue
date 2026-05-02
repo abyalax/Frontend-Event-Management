@@ -11,9 +11,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '~~/layers/shared/app/components/ui/sidebar';
-import { useLayout } from '~~/layers/shared/app/context/useLayout';
-import { cn } from '~~/layers/shared/app/lib/utils';
+} from '~/layers/shared/app/components/ui/sidebar';
+import { useLayout } from '~/layers/shared/app/context/useLayout';
+import { cn } from '~/layers/shared/app/lib/utils';
 import type { SidebarAppProps } from '.';
 import { bottomItems, sidebarItems } from '.';
 

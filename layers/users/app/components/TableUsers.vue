@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { DownloadIcon, TrashIcon } from 'lucide-vue-next';
 import { h } from 'vue';
-import { toast } from 'vue-sonner';
 import { Table } from '~/layers/shared/app/components/fragments/table';
 import type { BulkAction, TableFacetedFilter } from '~~/layers/shared/app/components/fragments/table';
 import { useGetUsers } from '../composables/useGetUsers';
 import type { User } from '../types';
 
 const selected = ref<User[]>([]);
+const { $toast } = useNuxtApp();
 
 const { queryParams, state } = useTableFilterUsers();
 
@@ -18,14 +18,14 @@ const bulkActions: BulkAction<User>[] = [
     label: 'Delete Selected',
     icon: TrashIcon,
     onClick: (selectedRows) => {
-      toast.info(`Delete data ${selectedRows[0]?.name}`);
+      $toast.info(`Delete data ${selectedRows[0]?.name}`);
     },
   },
   {
     label: 'Export Selected',
     icon: DownloadIcon,
     onClick: (selectedRows) => {
-      toast.info(`Export data ${selectedRows[0]?.name}`);
+      $toast.info(`Export data ${selectedRows[0]?.name}`);
     },
   },
 ];

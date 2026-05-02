@@ -1,3 +1,4 @@
+import { defineNuxtPlugin } from 'nuxt/app';
 import * as z from 'zod';
 
 export const envSchema = z.object({

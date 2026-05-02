@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PERMISSIONS } from '~/layers/shared/app/common/const/permission';
-import Page from '~~/layers/shared/app/components/layouts/Page.vue';
+import Page from '~/layers/shared/app/components/layouts/Page.vue';
 
 definePageMeta({
   middleware: 'authorization',

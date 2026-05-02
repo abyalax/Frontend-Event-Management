@@ -4,6 +4,9 @@
  * if exist, try refresh token
  */
 
+import { defineNuxtRouteMiddleware, navigateTo } from 'nuxt/app';
+import { useAuthStore } from '../composables/useAuthStore';
+
 export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore();
   const publicPages = ['/login', '/register'];

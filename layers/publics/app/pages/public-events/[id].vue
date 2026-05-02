@@ -1,34 +1,52 @@
 <script setup lang="ts">
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Ticket, CreditCard, Users } from 'lucide-vue-next';
+import { ArrowLeft, CalendarDays, MapPin, Ticket, CreditCard, Users } from 'lucide-vue-next';
 import { Button } from '~/layers/shared/app/components/ui/button';
 import { Badge } from '~/layers/shared/app/components/ui/badge';
-import type { Event as PublicEvent } from '../../../types/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/layers/shared/app/components/ui/select';
+import { formatDate } from '~/layers/shared/app/utils/formatter';
+import { useRoute } from 'vue-router';
+import { computed, ref } from 'vue';
+import { navigateTo } from 'nuxt/app';
+import StatusBadge from '~/layers/shared/app/components/fragments/badge/StatusBadge.vue';
+import { useBuyTicket, type BuyTicketRequest } from '~/layers/publics/app/composables/useBuyTicket';
+import type { EventPublic } from '../../types';
 
 const route = useRoute();
 const eventId = computed(() => String(route.params.id ?? ''));
 const { data, isPending } = useGetPublicEvent(eventId);
-const cachedEvent = computed<PublicEvent | undefined>(() => data.value ?? undefined);
+const cachedEvent = computed<EventPublic | undefined>(() => data.value ?? undefined);
+const { $toast } = useNuxtApp();
 
-const formatDate = (value?: string) => {
-  if (!value) return '-';
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-
-  return new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'full',
-    timeStyle: 'short',
-  }).format(date);
-};
+// Buy ticket state
+const selectedTicketId = ref<string>('');
+const ticketQuantity = ref<number>(1);
+const { mutate: buyTicket, isPending: isBuyingTicket } = useBuyTicket();
 
 const goBack = () => navigateTo('/publics/events');
 
-const openCreateOrder = () => {
-  return navigateTo({ path: '/orders/create', query: { eventId: eventId.value } });
-};
+const handleBuyTicket = () => {
+  if (!selectedTicketId.value) {
+    $toast.warning('Please select a ticket');
+    return;
+  }
 
-const continuePaymentTicket = () => {
-  return navigateTo({ path: '/payments/continue', query: { eventId: eventId.value } });
+  const buyTicketData: BuyTicketRequest = {
+    eventId: eventId.value,
+    ticketId: selectedTicketId.value,
+    quantity: ticketQuantity.value,
+    description: `Purchase ticket for event ${cachedEvent.value?.title}`,
+  };
+
+  buyTicket(buyTicketData, {
+    onSuccess: (response) => {
+      $toast.success(`Order created successfully! Order ID: ${response.id}`);
+      // Navigate to orders page
+      navigateTo(`/orders`);
+    },
+    onError: (error) => {
+      $toast.error(`Failed to buy ticket: ${error.message}`);
+    },
+  });
 };
 </script>
 
@@ -141,26 +159,48 @@ const continuePaymentTicket = () => {
             <p class="text-sm leading-6 text-slate-300">Gunakan tombol berikut untuk masuk ke flow order dan pembayaran tiket.</p>
           </div>
 
-          <div class="space-y-3">
-            <Button class="w-full justify-start" @click="openCreateOrder">
-              <CreditCard class="mr-2 size-4" />
-              Create Order
-            </Button>
+          <!-- Ticket Selection Form -->
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-white">Select Ticket</label>
+              <Select v-model="selectedTicketId">
+                <SelectTrigger class="w-full border-white/10 bg-white/5 text-white focus:border-sky-500 focus:ring-sky-500">
+                  <SelectValue placeholder="Choose a ticket..." />
+                </SelectTrigger>
+                <SelectContent class="border-white/10 bg-slate-900 text-white">
+                  <SelectItem
+                    v-for="ticket in cachedEvent?.tickets"
+                    :key="ticket.id"
+                    :value="ticket.id"
+                    class="text-white focus:bg-sky-500 focus:text-white"
+                  >
+                    {{ ticket.name }} - {{ formatPrice(ticket.price) }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Button
-              variant="outline"
-              class="w-full justify-start border-white/10 bg-white/5 text-white hover:bg-white/10"
-              @click="continuePaymentTicket"
-            >
-              <ExternalLink class="mr-2 size-4" />
-              Continue Payment Ticket
+            <div class="space-y-2">
+              <label for="ticket-quantity" class="text-sm font-medium text-white">Quantity</label>
+              <input
+                id="ticket-quantity"
+                v-model.number="ticketQuantity"
+                type="number"
+                min="1"
+                class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
+
+            <Button class="w-full" :disabled="!selectedTicketId || isBuyingTicket" @click="handleBuyTicket">
+              <CreditCard class="mr-2 size-4" />
+              {{ isBuyingTicket ? 'Processing...' : 'Buy Ticket Now' }}
             </Button>
           </div>
 
           <div class="rounded-2xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-            <p class="font-medium text-white">Banner</p>
-            <p class="mt-2 break-all text-xs text-slate-400">
-              {{ cachedEvent.bannerUrl ?? 'Banner belum tersedia untuk event ini.' }}
+            <img v-if="cachedEvent.bannerUrl" :src="cachedEvent.bannerUrl" :alt="cachedEvent.title" class="h-full w-full object-cover" />
+            <p v-else class="mt-2 break-all text-xs text-slate-400">
+              {{ 'Banner belum tersedia untuk event ini.' }}
             </p>
           </div>
         </aside>

@@ -11,12 +11,12 @@ import { useCreateStickyColumnStyle } from '../composable/use-sticky-column-styl
 import { useCreateStickyHeaderStyle } from '../composable/use-sticky-header-style';
 import type { TableProps } from '../index';
 
-import { Button } from '~~/layers/shared/app/components/ui/button';
-import { Input } from '~~/layers/shared/app/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '~~/layers/shared/app/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '~~/layers/shared/app/components/ui/select';
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '~~/layers/shared/app/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~~/layers/shared/app/components/ui/tooltip';
+import { Button } from '~/layers/shared/app/components/ui/button';
+import { Input } from '~/layers/shared/app/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '~/layers/shared/app/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '~/layers/shared/app/components/ui/select';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '~/layers/shared/app/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/layers/shared/app/components/ui/tooltip';
 
 import type { AcceptableValue } from 'reka-ui';
 import type { TableState } from '~/layers/shared/app/composable/filters';

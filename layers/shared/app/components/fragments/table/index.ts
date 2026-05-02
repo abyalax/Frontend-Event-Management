@@ -3,6 +3,7 @@ import type { Component } from 'vue';
 import type { Paginated } from '~~/layers/shared/app/types/meta';
 
 export { default as BulkActions } from './ui/BulkActions.vue';
+export { default as ExpandButton } from './ui/ExpandButton.vue';
 export { default as ColumnVisibilitySelector } from './ui/ColumnVisibilitySelector.vue';
 export { default as FacetedFilter } from './ui/FacetedFilter.vue';
 export { default as Table } from './ui/Table.vue';
@@ -54,5 +55,5 @@ export interface TableProps<T = unknown> {
   menufilter?: Component[];
   facetedFilter?: TableFacetedFilter<T>[];
   expandedRow?: (record: T) => Component;
-  onClickRow: (data: T, event?: MouseEvent) => void;
+  onClickRow?: (data: T, event?: MouseEvent) => void;
 }

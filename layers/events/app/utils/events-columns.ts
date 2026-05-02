@@ -1,8 +1,8 @@
 import type { ColumnDef } from '@tanstack/vue-table';
 import { h } from 'vue';
-import ActionsCell from '../components/ActionsCell.vue';
-import ExpandButton from '../components/ExpandButton.vue';
-import StatusBadge from '../components/StatusBadge.vue';
+import ActionsCellEvent from '../components/ActionsCellEvent.vue';
+import { ExpandButton } from '~/layers/shared/app/components/fragments/table';
+import StatusBadge from '~/layers/shared/app/components/fragments/badge/StatusBadge.vue';
 import type { Event } from '../types';
 import CheckboxHeader from '~/layers/shared/app/components/fragments/input/CheckboxHeader.vue';
 import CheckboxCell from '~/layers/shared/app/components/fragments/input/CheckboxCell.vue';
@@ -32,6 +32,7 @@ export const createEventColumns = (expanded: Ref<Event[]>): ColumnDef<Event>[] =
       expanded.value = [...expanded.value, row];
     }
   };
+
   return [
     {
       id: 'select',
@@ -55,7 +56,7 @@ export const createEventColumns = (expanded: Ref<Event[]>): ColumnDef<Event>[] =
 
         return h(ExpandButton, {
           expanded: isExpanded,
-          onToggle: () => toggleRowExpansion(row.original),
+          'onUpdate:expanded': () => toggleRowExpansion(row.original),
           key: `expand-${row.id}`,
         });
       },
@@ -125,7 +126,7 @@ export const createEventColumns = (expanded: Ref<Event[]>): ColumnDef<Event>[] =
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) =>
-        h(ActionsCell, {
+        h(ActionsCellEvent, {
           ...row.original,
           onToggleExpand: () => row.toggleExpanded(),
         }),

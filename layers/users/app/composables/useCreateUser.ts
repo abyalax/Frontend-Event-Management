@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/vue-query';
-import { toast } from 'vue-sonner';
 import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
 import { useHttp } from '~/layers/shared/app/composable/useHttp';
 import type { TResponse } from '~/layers/shared/app/types/response';
@@ -7,6 +6,7 @@ import type { CreateUserPayload, User } from '../types';
 
 export function useCreateUser() {
   const http = useHttp();
+  const { $toast } = useNuxtApp();
 
   return useMutation({
     mutationFn: async (params: CreateUserPayload) => {
@@ -16,10 +16,10 @@ export function useCreateUser() {
       });
       return response;
     },
-    onSuccess: () => toast.info('Create User Successfully'),
+    onSuccess: () => $toast.info('Create User Successfully'),
     onError: (error: { data: TResponse }) => {
       const response = error?.data;
-      toast.warning(response?.message ?? 'Create User Failed');
+      $toast.warning(response?.message ?? 'Create User Failed');
     },
   });
 }

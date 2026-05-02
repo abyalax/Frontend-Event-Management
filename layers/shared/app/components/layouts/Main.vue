@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { cn } from "../../lib/utils";
+import { cn } from '~/layers/shared/app/lib/utils';
 
 interface MainProps {
   fixed?: boolean;
@@ -12,14 +12,13 @@ const props = defineProps<MainProps>();
 
 const mainClasses = computed(() =>
   cn(
-    "px-4",
+    'px-4',
     // If layout is fixed, make the main container flex and grow
-    props.fixed && "flex grow flex-col",
+    props.fixed && 'flex grow flex-col',
     // If layout is not fluid, set the max-width
-    !props.fluid &&
-      "@7xl/content:mx-auto @7xl/content:w-full @7xl/content:max-w-7xl",
-    props.class,
-  ),
+    !props.fluid && '@7xl/content:mx-auto @7xl/content:w-full @7xl/content:max-w-7xl',
+    props.class
+  )
 );
 </script>
 

@@ -3,4 +3,5 @@ export const QUERY_KEY = Object.freeze({
   EVENTS_LIST: 'get-list-events',
   EVENTS_PUBLIC_LIST: 'get-list-public-events',
   EVENT_PUBLIC_DETAIL: 'get-public-event-detail',
+  USER_ORDERS: 'get-user-orders',
 });

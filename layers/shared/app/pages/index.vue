@@ -11,7 +11,7 @@
       <NuxtLink to="/example">
         <Button>Example Modules</Button>
       </NuxtLink>
-      <NuxtLink to="/publics/events">
+      <NuxtLink to="/public-events">
         <Button variant="outline">Public Events</Button>
       </NuxtLink>
     </div>

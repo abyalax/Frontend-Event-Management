@@ -1,11 +1,6 @@
-import { LayoutDashboard, Settings, User2, Album } from 'lucide-vue-next';
+import { LayoutDashboard, Settings, User2, Album, ListOrdered } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import { PERMISSIONS } from '../../../common/const/permission';
-
-export { default as Sidebar } from './AppSidebar.vue';
-export { default as SidebarGroup } from './AppSidebarGroup.vue';
-export { default as SidebarUser } from './AppSidebarUser.vue';
-export { default as SignOutDialog } from './SignOutDialog.vue';
 
 export interface MenuItem {
   title: string;
@@ -55,6 +50,12 @@ export const sidebarItems = (): MenuGroup[] => [
         url: '/events',
         icon: Album,
         permissions: [PERMISSIONS.EVENT.READ],
+      },
+      {
+        title: 'Orders',
+        url: '/orders',
+        icon: ListOrdered,
+        permissions: [PERMISSIONS.ORDER.READ],
       },
     ],
   },
