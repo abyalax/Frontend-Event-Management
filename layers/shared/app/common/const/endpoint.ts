@@ -14,4 +14,10 @@ export const ENDPOINT = Object.freeze({
   USER_ORDERS: '/orders/user/my-orders',
 
   PAYMENT_WEBHOOK_INVOICE: '/payments/webhook/invoice',
+
+  DASHBOARD: {
+    TOTAL_SALES: '/dashboard/total-sales',
+    TOP_EVENTS: '/dashboard/top-events',
+    TOP_CATEGORIES: '/dashboard/top-categories',
+  },
 });

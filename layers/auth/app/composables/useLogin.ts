@@ -3,7 +3,7 @@ import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
 import { useHttp } from '~/layers/shared/app/composable/useHttp';
 import type { TResponse } from '~/layers/shared/app/types/response';
 import type { User } from '~/layers/users/app/types';
-import type { LoginPayload, LoginResponse } from '../types';
+import type { LoginPayload } from '../types';
 import { useAuthStore } from './useAuthStore';
 import { useRouter } from 'vue-router';
 
@@ -15,11 +15,11 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (params: LoginPayload) => {
-      const response = await http<LoginResponse>(ENDPOINT.LOGIN, {
+      const response = await http(ENDPOINT.LOGIN, {
         method: 'POST',
         body: params,
       });
-      return response;
+      return response as TResponse<User>;
     },
     onSuccess: (data: TResponse<User>) => {
       const user = data.data;

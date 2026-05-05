@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
+    "@internationalized/date": "^3.12.1",
     "@nuxt/hints": "1.0.0-alpha.6",
     "@nuxt/icon": "^1.0.1",
     "@nuxt/image": "2.0.0",
@@ -40,6 +41,7 @@
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.20",
     "lucide-vue-next": "^0.564.0",
     "nuxt": "^4.3.1",
     "pinia": "^2.2.2",

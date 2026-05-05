@@ -47,7 +47,7 @@ defineProps<Props>();
             <ConfigDrawer />
           </div>
         </Header>
-        <Main fixed fluid>
+        <Main fluid>
           <Flex direction="row" justify="space-between" class="gap-4 mb-4">
             <Flex direction="column" :gap="20">
               <H4 class="text-start">{{ title }}</H4>
