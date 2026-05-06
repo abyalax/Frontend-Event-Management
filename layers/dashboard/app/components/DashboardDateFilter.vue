@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { RotateCcw, CalendarDays } from 'lucide-vue-next';
+import { RotateCcw, CalendarDays, Filter } from 'lucide-vue-next';
 import type { DateRange, DateValue } from 'reka-ui';
 
 import { Button } from '~/layers/shared/app/components/ui/button';
-import { Badge } from '~/layers/shared/app/components/ui/badge';
-import { Label } from '~/layers/shared/app/components/ui/label';
 import { RangeCalendar } from '~/layers/shared/app/components/ui/range-calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '~/layers/shared/app/components/ui/popover';
 import { toDate } from 'reka-ui/date';
 
 const { queryDashboard } = useQueryDashboard();
 
-const rangeCalendar = ref<DateRange | undefined>(undefined);
-const handleRangeSelect = (range: { start?: DateValue; end?: DateValue } | undefined) => {
+const rangeCalendar = ref<DateRange>();
+const handleRangeSelect = (range: DateRange) => {
+  // Update the rangeCalendar ref first
+  rangeCalendar.value = range;
+
   if (!range) {
     queryDashboard.startDate = undefined;
     queryDashboard.endDate = undefined;
@@ -42,7 +43,7 @@ const formatDisplayDate = (date: DateValue | undefined) => {
   }
 };
 
-const formatDisplayRange = (rangeRefs?: DateRange | undefined) => {
+const formatDisplayRange = (rangeRefs?: DateRange) => {
   const range = unref(rangeRefs);
   if (!range) return 'Select date range';
   if (!range.start && !range.end) return 'Select date range';
@@ -96,59 +97,78 @@ const formatDate = (dateString: string) => {
   });
 };
 </script>
-
 <template>
-  <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-    <div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
-      <h3 class="text-sm font-medium">Date Range Filter</h3>
-      <Button variant="ghost" size="sm" @click="resetFilter">
-        <RotateCcw class="h-4 w-4 mr-2" />
-        Reset
-      </Button>
-    </div>
+  <div class="flex justify-start">
+    <Popover>
+      <PopoverTrigger as-child>
+        <Button variant="secondary" class="gap-2 shadow-sm border-dashed">
+          <Filter class="h-4 w-4" />
+          <span>Filters</span>
+        </Button>
+      </PopoverTrigger>
 
-    <div class="p-6 pt-2 space-y-6">
-      <!-- Range Calendar Picker -->
-      <div class="space-y-2">
-        <Label class="text-sm font-medium">Date Range Picker</Label>
-        <Popover>
-          <PopoverTrigger as-child>
-            <Button variant="outline" class="w-full justify-start text-left font-normal">
-              <CalendarDays class="mr-2 h-4 w-4" />
-              {{ formatDisplayRange(rangeCalendar as DateRange) }}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent class="w-auto p-0" align="start">
-            <RangeCalendar initial-focus @update:model-value="handleRangeSelect" />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <!-- Quick Presets -->
-      <div class="space-y-2">
-        <Label class="text-sm font-medium">Quick Presets</Label>
-        <div class="flex flex-wrap gap-2">
-          <Button
-            v-for="preset in datePresets"
-            :key="preset.label"
-            :variant="isActivePreset(preset) ? 'default' : 'outline'"
-            size="sm"
-            @click="applyPreset(preset)"
-          >
-            {{ preset.label }}
+      <PopoverContent align="start" :side-offset="8" class="w-80 p-0 shadow-xl border-border/50">
+        <!-- Header minimalis -->
+        <div class="flex items-center justify-between border-b px-4 py-2.5 bg-muted/30">
+          <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"> Date Range Filter </span>
+          <Button variant="ghost" size="sm" class="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive" @click="resetFilter">
+            <RotateCcw class="h-3 w-3 mr-1" />
+            Reset
           </Button>
         </div>
-      </div>
 
-      <!-- Current Selection Display -->
-      <div>
-        <Badge variant="secondary" class="text-xs">
-          <span v-if="queryDashboard.startDate && queryDashboard.endDate">
-            Showing data from {{ formatDate(queryDashboard.startDate) }} to {{ formatDate(queryDashboard.endDate) }}
-          </span>
-          <span v-else>Showing all data</span>
-        </Badge>
-      </div>
-    </div>
+        <div class="p-4 space-y-5">
+          <!-- Range Picker Section -->
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-xs font-medium text-foreground/70">
+              <CalendarDays class="h-3.5 w-3.5" />
+              <span>Select Period</span>
+            </div>
+
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button variant="outline" size="sm" class="inline-flex w-auto max-w-full justify-start text-left font-normal bg-background px-3">
+                  <span class="truncate whitespace-nowrap">
+                    {{ formatDisplayRange(rangeCalendar) }}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent class="w-auto p-0" align="start" :side-offset="8">
+                <RangeCalendar initial-focus @update:model-value="handleRangeSelect" />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="space-y-2">
+            <span class="text-[11px] font-medium text-muted-foreground uppercase tracking-tight"> Quick Selection </span>
+            <div class="flex flex-wrap gap-1.5">
+              <Button
+                v-for="preset in datePresets"
+                :key="preset.label"
+                :variant="isActivePreset(preset) ? 'default' : 'secondary'"
+                class="h-7 text-[11px] px-2.5 py-0 rounded-md"
+                @click="applyPreset(preset)"
+              >
+                {{ preset.label }}
+              </Button>
+            </div>
+          </div>
+
+          <!-- Selection Summary -->
+          <div class="rounded-md bg-muted/50 p-2 border border-border/20">
+            <p class="text-[10px] text-muted-foreground text-center leading-relaxed">
+              <template v-if="queryDashboard.startDate && queryDashboard.endDate">
+                Showing data from <br />
+                <span class="font-medium text-foreground">{{ formatDate(queryDashboard.startDate) }}</span>
+                to
+                <span class="font-medium text-foreground">{{ formatDate(queryDashboard.endDate) }}</span>
+              </template>
+              <template v-else> Showing all available data </template>
+            </p>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   </div>
 </template>

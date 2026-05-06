@@ -44,7 +44,7 @@ const { data: topCategories, isLoading: topCategoriesPending, error: topCategori
         </div>
 
         <!-- Additional Dashboard Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
           <!-- Placeholder for future charts -->
           <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 class="text-lg font-semibold mb-4">Sales Trend</h3>

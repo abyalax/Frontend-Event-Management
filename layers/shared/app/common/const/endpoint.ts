@@ -1,5 +1,6 @@
 export const ENDPOINT = Object.freeze({
   LOGIN: '/auth/login',
+  LOGOUT: '/auth/logout',
   REGISTER: '/auth/register',
   REFRESH: 'refresh',
 

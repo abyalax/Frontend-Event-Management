@@ -47,10 +47,10 @@ const handleRowClick = (user: User, event?: MouseEvent) => {
 };
 
 const handleExpandedRow = (user: User) => {
-  return h('div', { class: 'p-4 bg-gray-50' }, [
+  return h('div', { class: 'p-4' }, [
     h('h3', { class: 'font-semibold mb-2' }, `Details for ${user.name}`),
-    h('p', { class: 'text-sm text-gray-600' }, `Email: ${user.email}`),
-    h('p', { class: 'text-sm text-gray-600' }, `Roles: ${user.roles.map((role) => role.name).join(', ')}`),
+    h('p', { class: 'text-sm' }, `Email: ${user.email}`),
+    h('p', { class: 'text-sm' }, `Roles: ${user.roles.map((role) => role.name).join(', ')}`),
   ]);
 };
 </script>

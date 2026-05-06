@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = computed(() => state.value.user);
   const isAuthenticated = computed(() => state.value.isAuthenticated);
 
-  const setUser = (user: User) => {
+  const setUser = (user?: User) => {
     state.value.user = user;
     state.value.isAuthenticated = true;
     state.value.error = undefined;

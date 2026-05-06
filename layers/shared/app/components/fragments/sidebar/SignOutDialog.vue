@@ -2,8 +2,7 @@
 import ConfirmDialog from '../confirm/ConfirmDialog.vue';
 
 const open = defineModel<boolean>('open', { default: false });
-const { $toast } = useNuxtApp();
-const handleAction = () => $toast.info('This button is just cosmetics UI');
+const { mutate } = useLogout();
 </script>
 
 <template>
@@ -14,6 +13,6 @@ const handleAction = () => $toast.info('This button is just cosmetics UI');
     destructive
     :is-loading="false"
     class="sm:max-w-sm"
-    @confirm="handleAction"
+    @confirm="mutate"
   />
 </template>
