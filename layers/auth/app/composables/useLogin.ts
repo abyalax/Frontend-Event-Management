@@ -7,6 +7,10 @@ import type { LoginPayload } from '../types';
 import { useAuthStore } from './useAuthStore';
 import { useRouter } from 'vue-router';
 
+interface ExtendedLoginPayload extends LoginPayload {
+  redirectUrl?: string;
+}
+
 export function useLogin() {
   const http = useHttp();
   const authStore = useAuthStore();
@@ -14,19 +18,22 @@ export function useLogin() {
   const { $toast } = useNuxtApp();
 
   return useMutation({
-    mutationFn: async (params: LoginPayload) => {
-      const response = await http(ENDPOINT.LOGIN, {
+    mutationFn: async (params: ExtendedLoginPayload) => {
+      const { redirectUrl, ...loginData } = params;
+      const response = await http<TResponse<User>>(ENDPOINT.LOGIN, {
         method: 'POST',
-        body: params,
+        body: loginData,
       });
-      return response as TResponse<User>;
+      return response;
     },
-    onSuccess: (data: TResponse<User>) => {
+    onSuccess: (data: TResponse<User>, variables: ExtendedLoginPayload) => {
       const user = data.data;
       $toast.info(`Welcome back ${user.name}`);
       authStore.setUser(user);
       authStore.setAuthenticated(true);
-      router.push('/dashboard');
+      // Use redirectUrl if provided, otherwise default to dashboard
+      const redirectTo = variables.redirectUrl ?? '/dashboard';
+      router.push(redirectTo);
     },
     onError: (error: { data: TResponse }) => {
       const response = error?.data;

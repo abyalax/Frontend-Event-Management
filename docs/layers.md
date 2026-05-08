@@ -128,7 +128,7 @@ Each layer **must have** `nuxt.config.ts` (can be minimal or empty).
 ```typescript
 export default defineNuxtConfig({
   // Can be completely empty
-})
+});
 ```
 
 **With CSS and aliases:**
@@ -137,9 +137,9 @@ export default defineNuxtConfig({
 export default defineNuxtConfig({
   css: ['~/layers/shared/app/assets/css/main.css'],
   alias: {
-    '#shared': '../layers/shared/shared'
-  }
-})
+    '#shared': '../layers/shared/shared',
+  },
+});
 ```
 
 ---
@@ -149,7 +149,7 @@ export default defineNuxtConfig({
 ### Root nuxt.config.ts
 
 ```typescript
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -165,13 +165,13 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/color-mode',
     'nuxt-security',
-    'nuxt-csurf'
+    'nuxt-csurf',
   ],
 
   // === LAYER-SPECIFIC CONFIG ===
   shadcn: {
     prefix: '',
-    componentDir: './layers/shared/app/components/ui' // Where shadcn components go
+    componentDir: './layers/shared/app/components/ui', // Where shadcn components go
   },
 
   veeValidate: {
@@ -180,18 +180,17 @@ export default defineNuxtConfig({
       Form: 'VeeForm',
       Field: 'VeeField',
       FieldArray: 'VeeFieldArray',
-      ErrorMessage: 'VeeErrorMessage'
-    }
+      ErrorMessage: 'VeeErrorMessage',
+    },
   },
 
   // === SECURITY ===
   security: {
     headers: {
-      crossOriginEmbedderPolicy:
-        process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
+      crossOriginEmbedderPolicy: process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
       contentSecurityPolicy: {
         /* ... */
-      }
+      },
     },
     rateLimiter: {
       /* ... */
@@ -199,25 +198,25 @@ export default defineNuxtConfig({
     xssValidator: {},
     requestSizeLimiter: {
       /* ... */
-    }
+    },
   },
 
   csurf: {
     https: process.env.NODE_ENV === 'production',
     cookieKey: 'csrf',
-    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
+    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
   },
 
   // === RUNTIME CONFIG ===
   runtimeConfig: {
     // Private (server only)
     private: {
-      dbUrl: process.env.DATABASE_URL
+      dbUrl: process.env.DATABASE_URL,
     },
     // Public (exposed to client)
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || '/api'
-    }
+      apiBaseUrl: process.env.API_BASE_URL || '/api',
+    },
   },
 
   // === BUILD OPTIMIZATION ===
@@ -225,10 +224,10 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
     build: {
       minify: 'esbuild',
-      assetsInlineLimit: 4096
-    }
-  }
-})
+      assetsInlineLimit: 4096,
+    },
+  },
+});
 ```
 
 ### Layer nuxt.config.ts
@@ -242,7 +241,7 @@ export default defineNuxtConfig({
   // - app/composables/ (any file name)
   // - app/pages/ (file system routing)
   // No configuration needed unless customizing
-})
+});
 ```
 
 **With CSS (shared Layer):**
@@ -251,9 +250,9 @@ export default defineNuxtConfig({
 export default defineNuxtConfig({
   css: ['~/layers/shared/app/assets/css/main.css'],
   alias: {
-    '#shared': '../layers/shared/shared'
-  }
-})
+    '#shared': '../layers/shared/shared',
+  },
+});
 ```
 
 ---
@@ -305,7 +304,7 @@ Nuxt 4 automatically imports files from layers without manual declaration.
 
 ```typescript
 // In any component/page/composable
-const exampleStore = useExampleStore() // Automatically imported
+const exampleStore = useExampleStore(); // Automatically imported
 ```
 
 ### Components (Auto-imported with Prefix)
@@ -322,7 +321,7 @@ const exampleStore = useExampleStore() // Automatically imported
 **Import**: Must manually import
 
 ```typescript
-import { helperFunction } from '~/layers/example/app/utils/helpers'
+import { helperFunction } from '~/layers/example/app/utils/helpers';
 ```
 
 ### API Routes (Automatic)
@@ -339,15 +338,15 @@ All routes in `/server/api/` are automatically available regardless of layer:
 ```typescript
 export default defineNuxtConfig({
   alias: {
-    '#shared': '../layers/shared/shared'
-  }
-})
+    '#shared': '../layers/shared/shared',
+  },
+});
 ```
 
 **Use in any file**:
 
 ```typescript
-import type { GlobalType } from '#shared/types'
+import type { GlobalType } from '#shared/types';
 ```
 
 ---
@@ -436,77 +435,77 @@ Database / External Service
 
 ```typescript
 export interface Example {
-  id: string
-  name: string
-  createdAt: string
+  id: string;
+  name: string;
+  createdAt: string;
 }
 
 export interface CreateExampleData {
-  name: string
+  name: string;
 }
 ```
 
 **2. API Service** (`useExampleApi.ts`)
 
 ```typescript
-import type { Example, CreateExampleData } from './types'
+import type { Example, CreateExampleData } from './types';
 
 export function useExampleApi() {
-  const config = useRuntimeConfig()
-  const baseUrl = config.public.apiBaseUrl
+  const config = useRuntimeConfig();
+  const baseUrl = config.public.apiBaseUrl;
 
   async function getAll(): Promise<Example[]> {
-    return $fetch(`${baseUrl}/examples`)
+    return $fetch(`${baseUrl}/examples`);
   }
 
   async function create(data: CreateExampleData): Promise<Example> {
     return $fetch(`${baseUrl}/examples`, {
       method: 'POST',
-      body: data
-    })
+      body: data,
+    });
   }
 
-  return { getAll, create }
+  return { getAll, create };
 }
 ```
 
 **3. Pinia Store** (`useExampleStore.ts`)
 
 ```typescript
-import { defineStore } from 'pinia'
-import type { Example } from './types'
+import { defineStore } from 'pinia';
+import type { Example } from './types';
 
 export const useExampleStore = defineStore('example', () => {
-  const items = ref<Example[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const items = ref<Example[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  const api = useExampleApi()
+  const api = useExampleApi();
 
   async function fetchAll() {
-    loading.value = true
+    loading.value = true;
     try {
-      items.value = await api.getAll()
+      items.value = await api.getAll();
     } catch (e) {
-      error.value = String(e)
+      error.value = String(e);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
-  return { items, loading, error, fetchAll }
-})
+  return { items, loading, error, fetchAll };
+});
 ```
 
 **4. Component Usage** (`ExampleCard.vue`)
 
 ```vue
 <script setup lang="ts">
-const exampleStore = useExampleStore()
+const exampleStore = useExampleStore();
 
 onMounted(() => {
-  exampleStore.fetchAll()
-})
+  exampleStore.fetchAll();
+});
 </script>
 
 <template>
@@ -524,16 +523,16 @@ onMounted(() => {
 **5. Server API Route** (`server/api/example/index.get.ts`)
 
 ```typescript
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'h3';
 
-export default defineEventHandler(async event => {
+export default defineEventHandler(async (event) => {
   try {
-    const examples = await fetchExamplesFromDb()
-    return examples
+    const examples = await fetchExamplesFromDb();
+    return examples;
   } catch (error) {
-    throw createError({ statusCode: 500, message: String(error) })
+    throw createError({ statusCode: 500, message: String(error) });
   }
-})
+});
 ```
 
 ---
@@ -588,8 +587,8 @@ Issues with imports usually stem from:
 ```typescript
 // useExampleStore.ts
 async function fetchIfNeeded() {
-  if (items.value.length > 0) return
-  await fetchAll()
+  if (items.value.length > 0) return;
+  await fetchAll();
 }
 ```
 
@@ -597,23 +596,23 @@ async function fetchIfNeeded() {
 
 ```typescript
 // useExampleForm.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 const schema = z.object({
   name: z.string().min(1),
-  email: z.string().email()
-})
+  email: z.string().email(),
+});
 
 export function useExampleForm() {
   const { handleSubmit, values } = useForm({
-    validationSchema: toTypedSchema(schema)
-  })
+    validationSchema: toTypedSchema(schema),
+  });
 
-  const onSubmit = handleSubmit(async values => {
-    await useExampleApi().create(values)
-  })
+  const onSubmit = handleSubmit(async (values) => {
+    await useExampleApi().create(values);
+  });
 
-  return { handleSubmit: onSubmit, values }
+  return { handleSubmit: onSubmit, values };
 }
 ```
 
@@ -621,23 +620,23 @@ export function useExampleForm() {
 
 ```typescript
 // server/middleware/example-auth.ts
-export default defineEventHandler(event => {
-  const token = getCookie(event, 'auth')
+export default defineEventHandler((event) => {
+  const token = getCookie(event, 'auth');
   if (!token && event.node.req.url?.startsWith('/api/example/')) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
+    throw createError({ statusCode: 401, message: 'Unauthorized' });
   }
-})
+});
 ```
 
 ### Pattern 4: Server Plugin
 
 ```typescript
 // server/plugins/example.ts
-export default defineNitroPlugin(nitroApp => {
-  nitroApp.hooks.hook('request.before', event => {
-    console.log(`[${event.node.req.method}] ${event.node.req.url}`)
-  })
-})
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('request.before', (event) => {
+    console.log(`[${event.node.req.method}] ${event.node.req.url}`);
+  });
+});
 ```
 
 ### Pattern 5: Global Store Initialization
@@ -646,9 +645,9 @@ export default defineNitroPlugin(nitroApp => {
 // shared/server/plugins/init-stores.ts
 export default defineNitroPlugin(() => {
   // Subscribe to store changes on server
-  const store = useExampleStore()
+  const store = useExampleStore();
   // Initialize server-side data if needed
-})
+});
 ```
 
 ### Pattern 6: Environment-Based Configuration
@@ -660,14 +659,14 @@ export default defineNuxtConfig({
     public: {
       environment: process.env.NODE_ENV,
       featureFlags: {
-        newUI: process.env.FEATURE_NEW_UI === 'true'
-      }
-    }
-  }
-})
+        newUI: process.env.FEATURE_NEW_UI === 'true',
+      },
+    },
+  },
+});
 
 // In component
-const config = useRuntimeConfig()
+const config = useRuntimeConfig();
 if (config.public.featureFlags.newUI) {
   // Use new UI
 }
@@ -730,5 +729,4 @@ if (config.public.featureFlags.newUI) {
 ---
 
 **Last Updated**: February 2026  
-**Framework**: Nuxt 4  
-**Original Project**: nuxt4-layers-template
+**Framework**: Nuxt 4

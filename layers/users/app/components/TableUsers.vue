@@ -5,6 +5,7 @@ import { Table } from '~/layers/shared/app/components/fragments/table';
 import type { BulkAction, TableFacetedFilter } from '~~/layers/shared/app/components/fragments/table';
 import { useGetUsers } from '../composables/useGetUsers';
 import type { User } from '../types';
+import { userColumns } from '../utils/users-columns';
 
 const selected = ref<User[]>([]);
 const { $toast } = useNuxtApp();
@@ -12,6 +13,12 @@ const { $toast } = useNuxtApp();
 const { queryParams, state } = useTableFilterUsers();
 
 const { data } = useGetUsers(queryParams);
+
+const tableData = computed(() => ({
+  meta: data.value?.meta,
+  links: data.value?.links,
+  data: data.value?.data ?? [],
+}));
 
 const bulkActions: BulkAction<User>[] = [
   {
@@ -59,7 +66,7 @@ const handleExpandedRow = (user: User) => {
   <Table
     v-model:filter="state"
     v-model:selected="selected"
-    :data="data"
+    :data="tableData"
     :columns="userColumns"
     :column-ids="['select', 'name', 'email', 'roles', 'actions']"
     :bulk-actions="bulkActions"

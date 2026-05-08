@@ -1,4 +1,6 @@
 import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch';
+import { AUTH_ENDPOINTS } from '~/layers/shared/app/common/const/pages';
+import type { TResponse, FetchError } from '../types/response';
 
 type HttpOptions = Omit<FetchOptions, 'method'> & {
   method?:
@@ -28,9 +30,7 @@ type HttpClient = {
   raw<T = unknown>(request: FetchRequest, options?: HttpOptions): Promise<FetchResponse<T>>;
 };
 
-const AUTH_ENDPOINTS = new Set(['/auth/login', '/auth/register', '/refresh', 'refresh']);
-
-let refreshPromise: Promise<void> | null = null;
+let refreshPromise: Promise<TResponse> | null = null;
 
 const normalizePath = (request: FetchRequest) => {
   if (typeof request === 'string') {
@@ -61,20 +61,37 @@ const shouldSkipRefresh = (request: FetchRequest) => {
 
 const getResponseStatus = (error: unknown) => {
   if (!error || typeof error !== 'object') return undefined;
+  const fetchError = error as FetchError;
+  // Try to get status from various possible locations in $fetch error structure
+  return fetchError.status ?? fetchError.response?.status ?? fetchError.cause?.status;
+};
 
-  const fetchError = error as {
-    status?: number;
-    response?: {
-      status?: number;
-    };
-  };
+const getErrorMessage = (error: unknown): string => {
+  if (!error || typeof error !== 'object') return '';
+  const fetchError = error as FetchError;
+  // Check all possible locations for the message
+  const possibleMessages = [fetchError.data?.message, fetchError.response?.data?.message, fetchError.cause?.data?.message];
+  for (const message of possibleMessages) {
+    if (message) {
+      if (Array.isArray(message)) {
+        return message[0] ?? '';
+      }
+      return message;
+    }
+  }
+  return '';
+};
 
-  return fetchError.status ?? fetchError.response?.status;
+const isTokenExpiredError = (error: unknown): boolean => {
+  const message = getErrorMessage(error);
+  const isExpired = message === 'Token Expired';
+  return isExpired;
 };
 
 export const useHttp = () => {
   const config = useRuntimeConfig();
   const authStore = useAuthStore();
+
   const client = $fetch.create({
     baseURL: config.public.API_URL,
     credentials: 'include',
@@ -94,11 +111,17 @@ export const useHttp = () => {
     } catch (error) {
       const status = getResponseStatus(error);
       const alreadyRetried = options?.__authRefreshAttempted ?? false;
+      const skipRefresh = shouldSkipRefresh(request);
+      const isExpired = isTokenExpiredError(error);
 
-      if (status !== 401 || alreadyRetried || shouldSkipRefresh(request)) throw error;
+      // Only refresh token if it's a 401 error AND the specific message is "Token Expired"
+      if (status !== 401 || alreadyRetried || skipRefresh || !isExpired) throw error;
 
       try {
         await refreshAuth();
+
+        // Wait for next tick to ensure the new cookie is properly set before retry
+        await nextTick();
       } catch (refreshError) {
         authStore.clearAuth();
         throw refreshError;

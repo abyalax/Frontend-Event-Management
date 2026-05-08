@@ -1,11 +1,11 @@
-import { getCookie, removeCookie, setCookie } from "../lib/cookies";
-import { createContext } from "../utils/createContext";
-import { onMounted, type Ref, ref, onUnmounted } from "vue";
+import { getCookie, removeCookie, setCookie } from '../lib/cookies';
+import { createContext } from '../utils/createContext';
+import { onMounted, type Ref, ref, onUnmounted } from 'vue';
 
-export type Direction = "ltr" | "rtl";
+export type Direction = 'ltr' | 'rtl';
 
-const DEFAULT_DIRECTION = "ltr";
-const DIRECTION_COOKIE_NAME = "dir";
+const DEFAULT_DIRECTION = 'ltr';
+const DIRECTION_COOKIE_NAME = 'dir';
 const DIRECTION_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
 type DirectionContextType = {
@@ -15,12 +15,10 @@ type DirectionContextType = {
   resetDir: () => void;
 };
 
-const [useDirection, provideContext] =
-  createContext<DirectionContextType>("Direction");
+const [useDirection, provideContext] = createContext<DirectionContextType>('Direction');
 
 function setupDirectionProvider() {
-  const initDirection =
-    (getCookie(DIRECTION_COOKIE_NAME) as Direction) || DEFAULT_DIRECTION;
+  const initDirection = (getCookie(DIRECTION_COOKIE_NAME) as Direction) || DEFAULT_DIRECTION;
   const dir = ref<Direction>(initDirection);
 
   const setDir = (params: Direction) => {
@@ -35,12 +33,12 @@ function setupDirectionProvider() {
 
   onMounted(() => {
     const htmlElement = document.documentElement;
-    htmlElement.setAttribute("dir", dir.value);
+    htmlElement.setAttribute('dir', dir.value);
   });
 
   onUnmounted(() => {
     const htmlElement = document.documentElement;
-    htmlElement.removeAttribute("dir");
+    htmlElement.removeAttribute('dir');
   });
 
   const context: DirectionContextType = {

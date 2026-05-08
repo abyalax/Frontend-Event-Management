@@ -39,14 +39,17 @@ export interface TableVirtualizer {
   virtualizeAt: number;
 }
 
-export type TableData<T> = Paginated<T>; // use new standar paginate structure
+/** use new standar paginate structure */
+export type TableData<T> = Paginated<T>;
+/** allow partial data for consumers */
+export type PartialTableData<T> = Partial<Paginated<T>>;
 
 export interface TableProps<T = unknown> {
   bulkActions?: BulkAction<T>[];
   columns: ColumnDef<T>[];
   columnIds: string[];
   freezeColumnIds?: string[];
-  data?: TableData<T>;
+  data?: PartialTableData<T>;
   topActions?: Component;
   virtualizer?: TableVirtualizer;
   initialColumnVisibility?: Record<string, boolean>;

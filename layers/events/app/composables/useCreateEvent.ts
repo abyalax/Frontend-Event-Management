@@ -23,9 +23,14 @@ export function useCreateEvent() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.EVENTS_PUBLIC_LIST] });
       $toast.info('Create Event Successfully');
     },
-    onError: (error: { data: TResponse }) => {
-      const response = error?.data;
-      $toast.warning(response?.message ?? 'Create Event Failed');
+    onError: (error: { data: TResponse; status: number }) => {
+      const errMessage = error.data.message;
+      const message = Array.isArray(errMessage) ? errMessage[0] : errMessage;
+      if (error.status >= 400 && error.status < 500) {
+        $toast.warning(message ?? 'Failed to create events');
+      } else {
+        $toast.error(message ?? 'Internal Server Error');
+      }
     },
   });
 }

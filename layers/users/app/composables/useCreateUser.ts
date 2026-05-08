@@ -17,9 +17,14 @@ export function useCreateUser() {
       return response;
     },
     onSuccess: () => $toast.info('Create User Successfully'),
-    onError: (error: { data: TResponse }) => {
-      const response = error?.data;
-      $toast.warning(response?.message ?? 'Create User Failed');
+    onError: (error: { data: TResponse; status: number }) => {
+      const errMessage = error.data.message;
+      const message = Array.isArray(errMessage) ? errMessage[0] : errMessage;
+      if (error.status >= 400 && error.status < 500) {
+        $toast.warning(message ?? 'Create User Failed');
+      } else {
+        $toast.error(message ?? 'Internal Server Error');
+      }
     },
   });
 }

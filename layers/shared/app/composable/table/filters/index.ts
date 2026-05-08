@@ -1,4 +1,4 @@
-import type { SortOrder } from '../../types/meta';
+import type { SortOrder } from '../../../types/meta';
 
 /**
  * Filter field configuration with type information

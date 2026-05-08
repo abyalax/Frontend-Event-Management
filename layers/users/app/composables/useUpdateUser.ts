@@ -22,9 +22,14 @@ export function useUpdateUser() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS_LIST] });
       $toast.info('Update User Successfully');
     },
-    onError: (error: { data: TResponse }) => {
-      const response = error?.data;
-      $toast.warning(response?.message ?? 'Update User Failed');
+    onError: (error: { data: TResponse; status: number }) => {
+      const errMessage = error.data.message;
+      const message = Array.isArray(errMessage) ? errMessage[0] : errMessage;
+      if (error.status >= 400 && error.status < 500) {
+        $toast.warning(message ?? 'Update User Failed');
+      } else {
+        $toast.error(message ?? 'Internal Server Error');
+      }
     },
   });
 }

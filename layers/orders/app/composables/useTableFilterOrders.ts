@@ -1,4 +1,4 @@
-import { useTableFilter } from '~/layers/shared/app/composable/filters/useTableFilter';
+import { useTableFilter } from '~/layers/shared/app/composable/table/filters/useTableFilter';
 
 export function useTableFilterOrders() {
   return useTableFilter({

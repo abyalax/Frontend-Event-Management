@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/layers/shared/app/components/ui/tooltip';
 
 import type { AcceptableValue } from 'reka-ui';
-import type { TableState } from '~/layers/shared/app/composable/filters';
+import type { TableState } from '~/layers/shared/app/composable/table/filters';
 import BulkActions from './BulkActions.vue';
 import ColumnVisibilitySelector from './ColumnVisibilitySelector.vue';
 import FacetedFilter from './FacetedFilter.vue';
@@ -86,13 +86,24 @@ const setExpanded = (updater: unknown) => {
 };
 
 const computedData = computed(() => {
-  const result = props.data?.data ?? [];
-  return result;
+  if (!props.data) return [];
+  return props.data.data ?? [];
 });
 
 const computedPagination = computed(() => {
-  const result = props.data?.meta;
-  return result;
+  if (!props.data) {
+    return {
+      itemsPerPage: 10,
+      totalItems: 0,
+      currentPage: 1,
+      totalPages: 0,
+      sortBy: [],
+      searchBy: [],
+      search: '',
+      select: [],
+    };
+  }
+  return props.data.meta;
 });
 
 const router = useRouter();
@@ -218,9 +229,12 @@ const updateRoute = () => {
 
 const handleRowClick = (row: Row<T>, event: MouseEvent) => {
   // Call the original onClickRow if provided
-  if (props.onClickRow) props.onClickRow(row.original, event);
-  // Toggle row expansion if expandedRow is provided
-  if (props.expandedRow) toggleRowExpansion(row.original);
+  if (props.onClickRow) {
+    props.onClickRow(row.original, event);
+  } else {
+    // Only toggle row expansion if no custom onClickRow is provided
+    if (props.expandedRow) toggleRowExpansion(row.original);
+  }
 };
 
 const getHeaderForCell = (cell: Cell<T, unknown>): Header<T, unknown> => {

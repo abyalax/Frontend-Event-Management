@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia';
-import { ENDPOINT } from '~/layers/shared/app/common/const/endpoint';
-import type { TResponse } from '~/layers/shared/app/types/response';
 import type { User } from '~/layers/users/app/types';
 import type { AuthState } from './types';
 import { computed, ref, watch } from 'vue';
@@ -13,6 +11,7 @@ const createInitialState = (): AuthState => ({
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<AuthState>(createInitialState());
 
+  const { mutateAsync: refreshToken } = useUseRefreshToken();
   const user = computed(() => state.value.user);
   const isAuthenticated = computed(() => state.value.isAuthenticated);
 
@@ -47,18 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
   }
-
-  const refreshToken = async () => {
-    try {
-      await $fetch<TResponse>(ENDPOINT.REFRESH, {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch (error) {
-      clearAuth();
-      throw error;
-    }
-  };
 
   watch(
     () => state.value.user,

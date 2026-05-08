@@ -6,6 +6,14 @@ import { Button } from '~/layers/shared/app/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/layers/shared/app/components/ui/form';
 import { useLogin } from '../composables/useLogin';
 
+interface Props {
+  redirectUrl?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  redirectUrl: '/dashboard',
+});
+
 const { mutate: mutateLogin, isPending } = useLogin();
 
 const loginSchema = toTypedSchema(
@@ -27,6 +35,7 @@ const onSubmit = form.handleSubmit((values) =>
   mutateLogin({
     email: values.email,
     password: values.password,
+    redirectUrl: props.redirectUrl,
   })
 );
 </script>

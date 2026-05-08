@@ -2,7 +2,7 @@ export const ENDPOINT = Object.freeze({
   LOGIN: '/auth/login',
   LOGOUT: '/auth/logout',
   REGISTER: '/auth/register',
-  REFRESH: 'refresh',
+  REFRESH: '/auth/refresh',
 
   USERS: '/users',
   EVENTS: '/events',
@@ -13,6 +13,9 @@ export const ENDPOINT = Object.freeze({
   ORDERS: '/orders',
   BUY_TICKET: '/orders/buy-ticket',
   USER_ORDERS: '/orders/user/my-orders',
+
+  CHECK_IN: '/check-in',
+  CHECK_IN_PDF: '/check-in/pdf-upload',
 
   PAYMENT_WEBHOOK_INVOICE: '/payments/webhook/invoice',
 

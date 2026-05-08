@@ -23,9 +23,14 @@ export function useUpdateEvent() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.EVENTS_PUBLIC_LIST] });
       $toast.info('Update Event Successfully');
     },
-    onError: (error: { data: TResponse }) => {
-      const response = error?.data;
-      $toast.warning(response?.message ?? 'Update Event Failed');
+    onError: (error: { data: TResponse; status: number }) => {
+      const errMessage = error.data.message;
+      const message = Array.isArray(errMessage) ? errMessage[0] : errMessage;
+      if (error.status >= 400 && error.status < 500) {
+        $toast.warning(message ?? 'Update Event Failed');
+      } else {
+        $toast.error(message ?? 'Internal Server Error');
+      }
     },
   });
 }
