@@ -1,12 +1,14 @@
-export const formatDate = (value?: string | Date) => {
+export const formatDate = (value?: string | Date, options?: Intl.DateTimeFormatOptions) => {
   if (!value) return '-';
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '-';
 
-  return new Intl.DateTimeFormat('id-ID', {
+  const formatOptions: Intl.DateTimeFormatOptions = {
     dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
+    ...options,
+  };
+
+  return new Intl.DateTimeFormat('id-ID', formatOptions).format(date);
 };
 
 export const formatPrice = (value: number | string, withPrefix: boolean = true): string => {

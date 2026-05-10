@@ -5,16 +5,17 @@ import StatusBadge from '~/layers/shared/app/components/fragments/badge/StatusBa
 import type { Event } from '../types';
 import CheckboxHeader from '~/layers/shared/app/components/fragments/input/CheckboxHeader.vue';
 import CheckboxCell from '~/layers/shared/app/components/fragments/input/CheckboxCell.vue';
-import { Button } from '~/layers/shared/app/components/ui/button';
 import { Input } from '~/layers/shared/app/components/ui/input';
+import { Button } from '~/layers/shared/app/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '~/layers/shared/app/components/ui/select';
 import { Switch } from '~/layers/shared/app/components/ui/switch';
 import { Trash2 } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
 import { formatDate } from '~/layers/shared/app/utils/formatter';
 import DatePicker from '~/layers/shared/app/components/fragments/date-picker/DatePicker.vue';
+import BannerUpload from '~/layers/events/app/components/BannerUpload.vue';
 
-export const createEventColumns = (
+type Params = {
   crud: {
     isRowEditable: (row: Event) => boolean;
     getFieldValue: <K extends keyof Event>(row: Event, field: K) => Event[K];
@@ -25,9 +26,13 @@ export const createEventColumns = (
     MOCK_CATEGORIES: Array<{ id: number; name: string }>;
     isNewRow: (row: Event) => boolean;
     handleDelete: (row: Event) => void;
-  },
-  expanded: Ref<Event[]>
-): ColumnDef<Event>[] => {
+  };
+  expanded: Ref<Event[]>;
+};
+
+export const useColumnEvents = (params: Params): ColumnDef<Event>[] => {
+  const { crud, expanded } = params;
+
   const isRowExpanded = (row: Event): boolean => {
     return expanded.value.some((item) => item.id === row.id);
   };
@@ -231,7 +236,7 @@ export const createEventColumns = (
           modelValue: crud.getFieldValue(event, 'startDate'),
           'onUpdate:modelValue': (v: string) => crud.handleFieldChange(event, 'startDate', v),
           placeholder: 'Start date',
-          class: 'w-full min-w-0',
+          class: 'w-full',
           onChange: (v: string) => crud.handleFieldChange(event, 'startDate', v),
         });
       },
@@ -249,7 +254,7 @@ export const createEventColumns = (
           modelValue: crud.getFieldValue(event, 'endDate'),
           'onUpdate:modelValue': (v: string) => crud.handleFieldChange(event, 'endDate', v),
           placeholder: 'End date',
-          class: 'w-full min-w-0',
+          class: 'w-full',
           onChange: (v: string) => crud.handleFieldChange(event, 'endDate', v),
         });
       },
@@ -271,6 +276,21 @@ export const createEventColumns = (
           class: 'h-8 w-full min-w-0',
           onClick: (e: MouseEvent) => e.stopPropagation(),
           onFocus: (e: FocusEvent) => e.stopPropagation(),
+        });
+      },
+    },
+    {
+      accessorKey: 'bannerUrl',
+      header: 'Banner',
+      size: 200,
+      cell: ({ row }) => {
+        const event = row.original;
+        // Use a unique key for each BannerUpload instance to prevent component reuse issues
+        const bannerKey = `banner-${event.id || (event as Event & { _tmpId?: string })._tmpId || 'unknown'}`;
+        return h(BannerUpload, {
+          key: bannerKey,
+          event,
+          crud,
         });
       },
     },

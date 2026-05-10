@@ -25,6 +25,7 @@ export const useTableStateEvents = () => {
   const createEventMutation = useCreateEvent();
   const updateEventMutation = useUpdateEvent();
   const deleteEventMutation = useDeleteEvent();
+  const authStore = useAuthStore();
 
   const crud = useInlineCrud<Event>({
     rowKey: 'id',
@@ -42,8 +43,7 @@ export const useTableStateEvents = () => {
       endDate: '',
       status: 'draft',
       categoryId: 1,
-      createdBy: '', // will be set during save
-      bannerMediaId: '', // will be set during save
+      createdBy: authStore.user?.id ?? '',
     }),
 
     onSave: async ({ created, updated }) => {
@@ -61,8 +61,8 @@ export const useTableStateEvents = () => {
               endDate: event.endDate ? new Date(event.endDate) : undefined,
               status: event.status,
               categoryId: event.categoryId,
-              createdBy: 'current-user-id', // TODO: get from auth context
-              bannerMediaId: 'default-banner-id', // TODO: handle banner media
+              createdBy: authStore.user?.id ?? '',
+              bannerMediaId: event.media?.[0]?.mediaId ?? '',
             };
             await createEventMutation.mutateAsync(payload);
           }

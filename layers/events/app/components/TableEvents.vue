@@ -4,7 +4,6 @@ import { Table } from '~/layers/shared/app/components/fragments/table';
 import RowDetailEvents from '~/layers/events/app/components/RowDetailEvents.vue';
 import EventTableTopActions from '~/layers/events/app/components/EventTableTopActions.vue';
 import type { Event } from '~/layers/events/app/types';
-import { createEventColumns } from '~/layers/events/app/utils/events-columns';
 import { useTableStateEvents } from '~/layers/events/app/composables/useTableStateEvents';
 import { useTableFilterEvents } from '~/layers/events/app/composables/useTableFilterEvents';
 import { useGetEvents } from '~/layers/events/app/composables/useGetEvents';
@@ -25,8 +24,7 @@ const tableData = computed(() => ({
   data: [...crud.localRows.value, ...(data.value?.data || [])],
 }));
 
-// Create CRUD columns
-const eventColumns = createEventColumns(crud, expanded);
+const eventColumns = useColumnEvents({ crud, expanded });
 
 const handleRowClick = (_event: Event, nativeEvent?: MouseEvent) => {
   nativeEvent?.stopPropagation();
