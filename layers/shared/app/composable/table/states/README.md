@@ -117,3 +117,4 @@ const TopActions = defineComponent(() => () => h('div', { class: 'flex gap-2' },
 
 - `created` — local rows dengan edited fields merged in, siap dikirim ke create API
 - `updated` — `{ id: T[rowKey], changes: Partial<T> }[]`, hanya rows yang benar-benar berubah (empty changes di-exclude otomatis)
+*Last Update at 2026-05-15 19:55:20*
