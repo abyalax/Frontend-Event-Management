@@ -23,9 +23,9 @@ const getStatusColor = (status: string) => {
 };
 
 interface OrderColumnsParams {
-  continuePayment: (orderId: string, totalAmount: string) => void;
+  continuePayment: (order: Order) => void;
   downloadTicket: (pdfUrl?: string | undefined) => void;
-  isProcessingPayment: Ref<boolean>;
+  payingOrderId: Ref<string | null>;
   expanded: Ref<Order[]>;
 }
 
@@ -156,8 +156,8 @@ export const useOrderColumns = (params: OrderColumnsParams): ColumnDef<Order>[] 
       cell: ({ row }) => {
         return h(ActionCellOrders, {
           order: row.original,
-          isProcessingPayment: params.isProcessingPayment.value,
-          onContinuePayment: (id: string, amount: string) => params.continuePayment(id, amount),
+          isProcessingPayment: params.payingOrderId.value === row.original.id,
+          onContinuePayment: () => params.continuePayment(row.original),
           onDownloadTicket: (url: string) => params.downloadTicket(url),
         });
       },

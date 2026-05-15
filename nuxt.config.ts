@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   },
   ssr: false,
 
-  extends: ['./layers/publics', './layers/shared', './layers/auth', './layers/users', './layers/events'],
+  extends: ['./layers/publics', './layers/shared', './layers/auth', './layers/users', './layers/events', './layers/orders'],
 
   css: ['~/layers/shared/app/assets/css/tailwind.css', 'vue-sonner/style.css'],
 
@@ -59,7 +59,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       API_URL: process.env.NUXT_PUBLIC_API_URL,
-      XENDIT_CALLBACK_TOKEN: process.env.NUXT_PUBLIC_XENDIT_CALLBACK_TOKEN,
+      APP_URL: process.env.NUXT_PUBLIC_APP_URL,
     },
   },
 

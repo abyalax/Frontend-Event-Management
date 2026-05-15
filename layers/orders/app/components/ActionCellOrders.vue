@@ -11,7 +11,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  continuePayment: [id: string, amount: string];
+  continuePayment: [];
   downloadTicket: [url: string];
 }>();
 
@@ -25,12 +25,12 @@ const handleDownload = () => {
   <div class="flex gap-2">
     <!-- Payment Button -->
     <Button
-      v-if="order.status === 'PENDING' && order.payment?.paymentUrl"
+      v-if="order.status === 'PENDING' && order.payment"
       size="sm"
       variant="outline"
       class="border-white/10 bg-white/5 text-white hover:bg-white/10"
       :disabled="isProcessingPayment"
-      @click="emit('continuePayment', order.id, order.totalAmount.toString())"
+      @click="emit('continuePayment')"
     >
       <CreditCard class="mr-1 size-3" />
       {{ isProcessingPayment ? 'Processing...' : 'Pay' }}

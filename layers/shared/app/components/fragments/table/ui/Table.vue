@@ -4,7 +4,7 @@ import { FlexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { ArrowDown, ArrowUp, FunnelPlus } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import { useScrollPosition } from '../composable/use-scroll-position';
 import { useCreateStickyColumnStyle } from '../composable/use-sticky-column-style';
@@ -14,7 +14,7 @@ import type { TableProps } from '../index';
 import { Button } from '~/layers/shared/app/components/ui/button';
 import { Input } from '~/layers/shared/app/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '~/layers/shared/app/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '~/layers/shared/app/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/layers/shared/app/components/ui/select';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '~/layers/shared/app/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/layers/shared/app/components/ui/tooltip';
 
@@ -106,7 +106,6 @@ const computedPagination = computed(() => {
   return props.data.meta;
 });
 
-const router = useRouter();
 const scrollRef = ref<HTMLElement | null>(null);
 const { scrollLeft, scrollTop } = useScrollPosition(scrollRef);
 
@@ -116,7 +115,9 @@ const globalFilter = ref<AcceptableValue | undefined>(undefined);
 const pageIndex = computed(() => Number(filter.value?.page ?? 1) - 1);
 const pageSize = computed(() => Number(filter.value?.limit ?? 10));
 
-const selectedLabel = computed(() => props.perPageOptions?.find((opt) => opt.value.toString() === filter.value?.limit?.toString()));
+const selectedPerPageValue = computed(() => String(filter.value?.limit ?? 10));
+const selectedLabel = computed(() => props.perPageOptions?.find((opt) => String(opt.value) === selectedPerPageValue.value));
+const selectedPerPageText = computed(() => selectedLabel.value?.label ?? `${selectedPerPageValue.value} / page`);
 
 const headerStickyStyle = useCreateStickyHeaderStyle<T, unknown>(props.freezeColumnIds ?? [], scrollTop.value);
 const bodyStickyStyle = useCreateStickyColumnStyle<T, unknown>(props.freezeColumnIds ?? []);
@@ -125,13 +126,11 @@ const onPaginationChange = (updater: Updater<PaginationState>) => {
   const next = typeof updater === 'function' ? updater({ pageIndex: pageIndex.value, pageSize: pageSize.value }) : updater;
   filter.value.page = next.pageIndex + 1;
   filter.value.limit = next.pageSize;
-  updateRoute();
 };
 
 const serverSearch = (value: AcceptableValue) => {
   filter.value.search = String(value || '');
   filter.value.page = 1;
-  updateRoute();
   globalFilter.value = value;
 };
 
@@ -186,7 +185,6 @@ const setGlobalFilter = (value: AcceptableValue) => {
 
 const handlePerPageChange = (value: AcceptableValue) => {
   filter.value.limit = Number(value);
-  updateRoute();
 };
 
 const handleSortClick = (header: Header<T, unknown>) => {
@@ -198,8 +196,6 @@ const handleSortClick = (header: Header<T, unknown>) => {
     sorting.value = [{ id: column.id, desc: false }];
     filter.value.sort_by = String(column.id);
     filter.value.sort_order = 'ASC';
-
-    updateRoute();
     return;
   }
 
@@ -208,8 +204,6 @@ const handleSortClick = (header: Header<T, unknown>) => {
     sorting.value = [{ id: column.id, desc: true }];
     filter.value.sort_by = String(column.id);
     filter.value.sort_order = 'DESC';
-
-    updateRoute();
     return;
   }
 
@@ -217,14 +211,6 @@ const handleSortClick = (header: Header<T, unknown>) => {
   sorting.value = [];
   filter.value.sort_by = '';
   filter.value.sort_order = '';
-
-  updateRoute();
-};
-
-const updateRoute = () => {
-  router.push({
-    query: filter.value as Omit<AcceptableValue, 'bigint'>,
-  });
 };
 
 const handleRowClick = (row: Row<T>, event: MouseEvent) => {
@@ -298,10 +284,19 @@ nextTick(() => {
 
 onMounted(() => {
   const route = useRoute();
-  filter.value = {
-    ...filter.value,
-    ...Object.fromEntries(Object.entries(route.query).map(([key, value]) => [key, String(value || '')])),
-  } as TableState;
+  const routePage = Number(route.query.page);
+  const routeLimit = Number(route.query.limit);
+
+  if (Number.isFinite(routePage) && routePage > 0) {
+    filter.value.page = routePage;
+  }
+  if (Number.isFinite(routeLimit) && routeLimit > 0) {
+    filter.value.limit = routeLimit;
+  }
+
+  if (route.query.search !== undefined) filter.value.search = String(route.query.search || '');
+  if (route.query.sort_by !== undefined) filter.value.sort_by = String(route.query.sort_by || '');
+  if (route.query.sort_order !== undefined) filter.value.sort_order = String(route.query.sort_order || '');
 });
 </script>
 
@@ -507,9 +502,11 @@ onMounted(() => {
           @previous-page="table.previousPage"
         />
 
-        <Select :model-value="filter.limit" @update:model-value="handlePerPageChange">
-          <SelectTrigger class="w-32.5 h-8">
-            {{ selectedLabel?.label }}
+        <Select :model-value="selectedPerPageValue" @update:model-value="handlePerPageChange">
+          <SelectTrigger :key="selectedPerPageText" class="w-32.5 h-8">
+            <SelectValue>
+              {{ selectedPerPageText }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem v-for="option in props.perPageOptions" :key="option.value" :value="String(option.value)">

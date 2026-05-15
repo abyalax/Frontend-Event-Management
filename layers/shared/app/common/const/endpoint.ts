@@ -13,11 +13,13 @@ export const ENDPOINT = Object.freeze({
   ORDERS: '/orders',
   BUY_TICKET: '/orders/buy-ticket',
   USER_ORDERS: '/orders/user/my-orders',
+  ORDER_DETAIL: (id: string) => `/orders/${id}`,
+  ORDER_STATUS: (id: string) => `/orders/${id}/status`,
+  ORDER_TICKETS: (id: string) => `/orders/${id}/tickets`,
+  ORDER_PAYMENT_QRIS: (id: string) => `/orders/${id}/payment-qris`,
 
   CHECK_IN: '/check-in',
   CHECK_IN_PDF: '/check-in/pdf-upload',
-
-  PAYMENT_WEBHOOK_INVOICE: '/payments/webhook/invoice',
 
   DASHBOARD: {
     TOTAL_SALES: '/dashboard/total-sales',

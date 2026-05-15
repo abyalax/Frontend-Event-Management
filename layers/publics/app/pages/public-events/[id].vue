@@ -8,7 +8,7 @@ import { useRoute } from 'vue-router';
 import { computed, ref } from 'vue';
 import { navigateTo } from 'nuxt/app';
 import StatusBadge from '~/layers/shared/app/components/fragments/badge/StatusBadge.vue';
-import { useBuyTicket, type BuyTicketRequest } from '~/layers/publics/app/composables/useBuyTicket';
+import { useBuyTicket, type BuyTicketRequest, type PaymentOption } from '~/layers/publics/app/composables/useBuyTicket';
 import type { EventPublic } from '../../types';
 import { useAuthStore } from '~/layers/auth/app/composables/useAuthStore';
 
@@ -22,7 +22,9 @@ const authStore = useAuthStore();
 // Buy ticket state
 const selectedTicketId = ref<string>('');
 const ticketQuantity = ref<number>(1);
+const selectedPaymentOption = ref<PaymentOption>('INVOICE');
 const { mutate: buyTicket, isPending: isBuyingTicket } = useBuyTicket();
+const { buildReturnUrls, redirectToPayment } = usePaymentReturn();
 
 const goBack = () => navigateTo('/public-events');
 
@@ -44,14 +46,25 @@ const handleBuyTicket = () => {
     ticketId: selectedTicketId.value,
     quantity: ticketQuantity.value,
     description: `Purchase ticket for event ${cachedEvent.value?.title}`,
+    paymentMethod: selectedPaymentOption.value.startsWith('EWALLET_DANA') ? 'EWALLET_DANA' : selectedPaymentOption.value,
+    ewalletType:
+      selectedPaymentOption.value === 'EWALLET_DANA' ? 'DANA' : selectedPaymentOption.value === 'EWALLET_SHOPEEPAY' ? 'SHOPEEPAY' : undefined,
+    ...buildReturnUrls(),
   };
 
   buyTicket(buyTicketData, {
-    onSuccess: (response) => {
-      $toast.success(`Order created successfully! Order ID: ${response.id}`);
-      navigateTo(`/orders`);
+    onSuccess: async (response) => {
+      $toast.success('Order created. Redirecting to secure payment page.');
+      await redirectToPayment(response);
     },
-    onError: () => navigateTo('/login'),
+    onError: (error: unknown) => {
+      const status = typeof error === 'object' && error && 'status' in error ? (error as { status?: number }).status : undefined;
+      if (status === 401) {
+        navigateTo('/login');
+        return;
+      }
+      $toast.warning('Failed to create payment. Please try again.');
+    },
   });
 };
 </script>
@@ -193,6 +206,21 @@ const handleBuyTicket = () => {
                 min="1"
                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Payment Method</label>
+              <Select v-model="selectedPaymentOption">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Choose a payment method..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INVOICE">Xendit Invoice</SelectItem>
+                  <SelectItem value="QRIS">QRIS</SelectItem>
+                  <SelectItem value="EWALLET_SHOPEEPAY">ShopeePay</SelectItem>
+                  <SelectItem value="EWALLET_DANA">DANA</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <Button class="w-full shadow-lg" size="lg" :disabled="!selectedTicketId || isBuyingTicket" @click="handleBuyTicket">

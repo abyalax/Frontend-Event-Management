@@ -5,6 +5,12 @@ export enum OrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum PaymentMethod {
+  INVOICE = 'INVOICE',
+  QRIS = 'QRIS',
+  EWALLET = 'EWALLET',
+}
+
 export interface GeneratedTicket {
   id: string;
   qrCodeUrl: string;

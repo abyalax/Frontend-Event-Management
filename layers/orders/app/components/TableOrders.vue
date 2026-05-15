@@ -2,35 +2,36 @@
 import { Table, type TableFacetedFilter } from '~/layers/shared/app/components/fragments/table';
 import { useGetUserOrders } from '~/layers/orders/app/composables/useGetUserOrders';
 import { useTableFilterOrders } from '~/layers/orders/app/composables/useTableFilterOrders';
-import { useProcessPayment } from '~/layers/orders/app/composables/useProcessPayment';
 import { useOrderColumns } from '~/layers/orders/app/composables/useOrderColumns';
 import type { Order } from '../types';
 import RowOrderDetail from './RowOrderDetail.vue';
-import { OrderStatus } from '~/layers/shared/app/types/enum';
 
 const selected = ref<Order[]>([]);
 const expanded = ref<Order[]>([]);
 
 const { state, queryParams } = useTableFilterOrders();
 const { data } = useGetUserOrders(queryParams);
+const { redirectToPayment } = usePaymentReturn();
+const { $toast } = useNuxtApp();
 
-const { mutate: processPayment, isPending: isProcessingPayment } = useProcessPayment();
+const payingOrderId = ref<string | null>(null);
 
-const continuePayment = (orderId: string, totalAmount: string) => {
-  const paymentId = `inv-${crypto.randomUUID()}`;
-  processPayment({
-    id: paymentId,
-    external_id: orderId,
-    status: OrderStatus.PAID,
-    amount: totalAmount,
-  });
+const continuePayment = async (order: Order) => {
+  try {
+    payingOrderId.value = order.id;
+    await redirectToPayment(order);
+  } catch (error) {
+    $toast.warning(error instanceof Error ? error.message : 'Failed to continue payment');
+  } finally {
+    payingOrderId.value = null;
+  }
 };
 
 const downloadTicket = (pdfUrl?: string) => {
   if (pdfUrl) window.open(pdfUrl, '_blank');
 };
 
-const orderColumns = useOrderColumns({ continuePayment, downloadTicket, isProcessingPayment, expanded });
+const orderColumns = useOrderColumns({ continuePayment, downloadTicket, payingOrderId, expanded });
 
 const facetedFilters: TableFacetedFilter<Order>[] = [
   {
