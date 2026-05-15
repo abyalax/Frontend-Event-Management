@@ -14,7 +14,7 @@ A reusable Vue 3 composable for managing table state, filters, pagination, sorti
 ## Quick Start
 
 ```js
-import { useTableFilter } from '@/hooks/filters/useTableFilter'
+import { useTableFilter } from '@/hooks/filters/useTableFilter';
 
 // Basic usage with auto-detected types
 const { state, search, filterRefs, queryParams, updateOptions } = useTableFilter({
@@ -23,7 +23,7 @@ const { state, search, filterRefs, queryParams, updateOptions } = useTableFilter
     'is_active', // Auto-detected as boolean (starts with is_)
     'sku', // Auto-detected as string
   ],
-})
+});
 ```
 
 ## API Reference
@@ -32,11 +32,11 @@ const { state, search, filterRefs, queryParams, updateOptions } = useTableFilter
 
 ```ts
 interface UseTableFilterOptions {
-  filterFields?: Array<FilterFieldConfig | string>
-  sortParam?: 'sort' | 'sort_by' // Default: 'sort_by'
-  debounceSearch?: number // Default: 500ms
-  debounceFilters?: number // Default: 500ms
-  syncUrl?: boolean // Default: true
+  filterFields?: Array<FilterFieldConfig | string>;
+  sortParam?: 'sort' | 'sort_by'; // Default: 'sort_by'
+  debounceSearch?: number; // Default: 500ms
+  debounceFilters?: number; // Default: 500ms
+  syncUrl?: boolean; // Default: true
 }
 ```
 
@@ -44,10 +44,10 @@ interface UseTableFilterOptions {
 
 ```ts
 interface FilterFieldConfig {
-  name: string
-  type?: 'number' | 'boolean' | 'string' | 'array'
-  defaultValue?: any
-  debounceMs?: number
+  name: string;
+  type?: 'number' | 'boolean' | 'string' | 'array';
+  defaultValue?: any;
+  debounceMs?: number;
 }
 ```
 
@@ -55,13 +55,13 @@ interface FilterFieldConfig {
 
 ```ts
 interface UseTableFilterReturn {
-  state: TableState // Reactive state object
-  search: Ref<string> // Search input ref
-  filterRefs: { [key: string]: Ref<any> } // Filter refs for v-model
-  sortByModel: Ref<SortByModel[]> // Vuetify sort model
-  queryParams: ComputedRef<QueryParams> // API query parameters
-  updateOptions: (options) => void // Table options handler
-  resetFilters: () => void // Reset all filters
+  state: TableState; // Reactive state object
+  search: Ref<string>; // Search input ref
+  filterRefs: { [key: string]: Ref<any> }; // Filter refs for v-model
+  sortByModel: Ref<SortByModel[]>; // Vuetify sort model
+  queryParams: ComputedRef<QueryParams>; // API query parameters
+  updateOptions: (options) => void; // Table options handler
+  resetFilters: () => void; // Reset all filters
 }
 ```
 
@@ -104,7 +104,7 @@ export function useTableFilterProducts() {
     ],
     sortParam: 'sort_by',
     debounceSearch: 800,
-  })
+  });
 }
 ```
 
@@ -123,7 +123,7 @@ export function useTableFilterUsers() {
       'can_edit', // Auto: boolean
     ],
     sortParam: 'sort',
-  })
+  });
 }
 ```
 
@@ -141,7 +141,7 @@ export function useTableFilterOrders() {
     ],
     debounceSearch: 600,
     debounceFilters: 300,
-  })
+  });
 }
 ```
 
@@ -156,7 +156,7 @@ export function useTableFilterProducts() {
       { name: 'tags', type: 'array' }, // Multi-select tags
       'brand_id', // Single brand filter
     ],
-  })
+  });
 }
 ```
 
@@ -173,7 +173,7 @@ export function useTableFilterSearch() {
     ],
     debounceSearch: 300, // Global search debounce
     debounceFilters: 200, // Global filter debounce
-  })
+  });
 }
 ```
 
@@ -183,19 +183,15 @@ export function useTableFilterSearch() {
 
 ```vue
 <script setup>
-import { useTableFilter } from '@/hooks/filters/useTableFilter'
+import { useTableFilter } from '@/hooks/filters/useTableFilter';
 
 const { state, search, filterRefs, sortByModel, queryParams, updateOptions } = useTableFilter({
-  filterFields: [
-    { name: 'status', type: 'string', defaultValue: 'active' },
-    { name: 'category_id', type: 'number' },
-    'is_featured',
-  ],
+  filterFields: [{ name: 'status', type: 'string', defaultValue: 'active' }, { name: 'category_id', type: 'number' }, 'is_featured'],
   sortParam: 'sort',
-})
+});
 
 // Use queryParams for API calls
-const { data, loading } = await fetchProducts(queryParams.value)
+const { data, loading } = await fetchProducts(queryParams.value);
 </script>
 
 <template>
@@ -203,19 +199,9 @@ const { data, loading } = await fetchProducts(queryParams.value)
   <v-text-field v-model="search" label="Search" prepend-inner-icon="mdi-magnify" clearable />
 
   <!-- Filter Selects -->
-  <v-select
-    v-model="filterRefs.status.value"
-    :items="['active', 'inactive', 'pending']"
-    label="Status"
-  />
+  <v-select v-model="filterRefs.status.value" :items="['active', 'inactive', 'pending']" label="Status" />
 
-  <v-select
-    v-model="filterRefs.category_id.value"
-    :items="categories"
-    item-value="id"
-    item-title="name"
-    label="Category"
-  />
+  <v-select v-model="filterRefs.category_id.value" :items="categories" item-value="id" item-title="name" label="Category" />
 
   <v-checkbox v-model="filterRefs.is_featured.value" label="Featured Only" />
 
@@ -241,7 +227,7 @@ export function useTableFilterLegacy() {
   const { state, queryParams } = useTableFilter({
     filterFields: ['status', 'category'],
     syncUrl: true, // Still sync to URL
-  })
+  });
 
   // Custom URL mapping if needed
   const customQueryParams = computed(() => ({
@@ -249,9 +235,9 @@ export function useTableFilterLegacy() {
     // Map to legacy API parameter names
     status_filter: queryParams.value.status,
     cat_id: queryParams.value.category,
-  }))
+  }));
 
-  return { state, queryParams: customQueryParams }
+  return { state, queryParams: customQueryParams };
 }
 ```
 
@@ -260,12 +246,13 @@ export function useTableFilterLegacy() {
 ```js
 // Add/remove filters based on conditions
 export function useTableFilterDynamic(hasAdvancedFilters) {
-  const baseFields = ['search', 'status']
-  const advancedFields = ['category', 'brand', 'price_range']
+  const baseFields = ['search', 'status'];
+  const advancedFields = ['category', 'brand', 'price_range'];
 
   return useTableFilter({
     filterFields: [...baseFields, ...(hasAdvancedFilters ? advancedFields : [])],
-  })
+  });
 }
 ```
-*Last Update at 2026-05-15 19:55:20*
+
+\_Last Update at 2026-05-15 19:55:20\_

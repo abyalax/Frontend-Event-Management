@@ -172,14 +172,10 @@ const columns: ColumnDef<Product>[] = [
         },
         {
           default: () => [
-            h(SelectTrigger, { class: 'h-8 w-36' }, () =>
-              h('span', crud.getFieldValue(product, 'category') || 'Select…'),
-            ),
-            h(SelectContent, {}, () =>
-              CATEGORIES.map((cat) => h(SelectItem, { key: cat, value: cat }, () => cat)),
-            ),
+            h(SelectTrigger, { class: 'h-8 w-36' }, () => h('span', crud.getFieldValue(product, 'category') || 'Select…')),
+            h(SelectContent, {}, () => CATEGORIES.map((cat) => h(SelectItem, { key: cat, value: cat }, () => cat))),
           ],
-        },
+        }
       );
     },
     size: 180,
@@ -212,11 +208,7 @@ const columns: ColumnDef<Product>[] = [
       const value = crud.getFieldValue(product, 'active');
 
       if (!crud.isRowEditable(product)) {
-        return h(
-          Badge,
-          { variant: value ? 'default' : 'secondary' },
-          () => (value ? 'Active' : 'Inactive'),
-        );
+        return h(Badge, { variant: value ? 'default' : 'secondary' }, () => (value ? 'Active' : 'Inactive'));
       }
 
       return h('div', { class: 'flex items-center gap-2' }, [
@@ -248,7 +240,7 @@ const columns: ColumnDef<Product>[] = [
               crud.handleDelete(product);
             },
           },
-          () => h(Trash2, { class: 'w-4 h-4' }),
+          () => h(Trash2, { class: 'w-4 h-4' })
         ),
       ]);
     },
@@ -278,7 +270,7 @@ const TopActions = defineComponent({
               onClick: crud.handleCancel,
               disabled: crud.isLoading.value,
             },
-            () => [h(X, { class: 'w-4 h-4 mr-1' }), 'Cancel'],
+            () => [h(X, { class: 'w-4 h-4 mr-1' }), 'Cancel']
           ),
 
         // Save — enabled when there are pending changes
@@ -290,12 +282,7 @@ const TopActions = defineComponent({
             disabled: !crud.hasChanges.value || crud.isLoading.value,
             onClick: crud.handleSave,
           },
-          () => [
-            crud.isLoading.value
-              ? h('span', { class: 'animate-spin mr-1' }, '⟳')
-              : h(Save, { class: 'w-4 h-4 mr-1' }),
-            'Save',
-          ],
+          () => [crud.isLoading.value ? h('span', { class: 'animate-spin mr-1' }, '⟳') : h(Save, { class: 'w-4 h-4 mr-1' }), 'Save']
         ),
 
         // Edit — enabled when rows are selected
@@ -307,7 +294,7 @@ const TopActions = defineComponent({
             disabled: !crud.canEnableEdit.value || crud.isLoading.value,
             onClick: crud.isEditMode.value ? crud.disableEditMode : crud.enableEditMode,
           },
-          () => [h(Edit, { class: 'w-4 h-4 mr-1' }), crud.isEditMode.value ? 'Editing…' : 'Edit'],
+          () => [h(Edit, { class: 'w-4 h-4 mr-1' }), crud.isEditMode.value ? 'Editing…' : 'Edit']
         ),
 
         // Delete selected — bulk delete existing rows
@@ -320,7 +307,7 @@ const TopActions = defineComponent({
               disabled: crud.isLoading.value,
               onClick: crud.handleBulkDelete,
             },
-            () => [h(Trash2, { class: 'w-4 h-4 mr-1' }), `Delete (${crud.selectedRows.value.length})`],
+            () => [h(Trash2, { class: 'w-4 h-4 mr-1' }), `Delete (${crud.selectedRows.value.length})`]
           ),
 
         // Add row
@@ -332,7 +319,7 @@ const TopActions = defineComponent({
             disabled: !crud.canAddRow.value || crud.isEditMode.value || crud.isLoading.value,
             onClick: crud.handleAdd,
           },
-          () => [h(Plus, { class: 'w-4 h-4 mr-1' }), 'Add Row'],
+          () => [h(Plus, { class: 'w-4 h-4 mr-1' }), 'Add Row']
         ),
       ]);
   },
@@ -340,14 +327,8 @@ const TopActions = defineComponent({
 </script>
 
 <template>
-  <Table
-    v-model:filter="filter"
-    :columns="columns"
-    :column-ids="columnIds"
-    :data="tableData"
-    :top-actions="TopActions"
-    :pagination="false"
-  />
+  <Table v-model:filter="filter" :columns="columns" :column-ids="columnIds" :data="tableData" :top-actions="TopActions" :pagination="false" />
 </template>
 ```
-*Last Update at 2026-05-15 19:55:20*
+
+\_Last Update at 2026-05-15 19:55:20\_

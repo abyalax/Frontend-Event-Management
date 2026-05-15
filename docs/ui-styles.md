@@ -37,7 +37,7 @@ Tailwind exposes these through the `@theme inline` block, so prefer semantic uti
 
 ```html
 <div class="bg-background text-foreground border-border">
-  <Button class="bg-primary text-primary-foreground">Save</Button>
+  <button class="bg-primary text-primary-foreground">Save</button>
 </div>
 ```
 
@@ -124,4 +124,4 @@ Shared table logic and documentation live under:
 - `docs/inline-crud-table-mechanism.md`
 
 Feature layers can define columns and feature-specific table state, but should reuse the shared table primitives and filter/state composables.
-*Last Update at 2026-05-15 19:55:20*
+\_Last Update at 2026-05-15 19:55:20\_

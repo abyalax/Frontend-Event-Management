@@ -6,6 +6,7 @@
 ## Overview
 
 The `shared` layer is the **foundation layer** that provides:
+
 - Global UI components (shadcn-vue)
 - Global CSS and styling (Tailwind CSS)
 - Shared utility functions
@@ -45,23 +46,29 @@ layers/shared/
 ## Key Files
 
 ### app.vue
+
 - Root Vue component that wraps all pages
 - Imports global CSS and Sonner styles
 - Sets up NuxtLayout and NuxtPage
 
 ### Layouts
+
 - `authenticated.vue` - For authenticated pages
 - `empty.vue` - For public pages (login, etc.)
 
 ### Components
 
 #### UI Components (`components/ui/`)
+
 Auto-imported shadcn-vue components:
+
 - Button, Badge, Card, Dialog, etc.
 - Auto-available as `<Button />`, `<Badge />`, etc.
 
 #### Fragments (`components/fragments/`)
+
 Common UI fragments:
+
 - Breadcrumbs
 - Command palette
 - Confirm dialog
@@ -69,14 +76,18 @@ Common UI fragments:
 - Sidebar
 
 #### Layouts (`components/layouts/`)
+
 Layout building blocks:
+
 - Flex.vue - Flexbox container
 - Header.vue - App header
 - Main.vue - Main content area
 - Page.vue - Full page wrapper
 
 #### Providers (`components/providers/`)
+
 Context providers:
+
 - AppProvider - Global app context
 - DirectionProvider - RTL/LTR support
 - LayoutProvider - Layout preferences
@@ -85,23 +96,30 @@ Context providers:
 ## Utilities
 
 ### `lib/utils.ts`
+
 ```typescript
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 ```
+
 Used for merging Tailwind classes.
 
 ### `lib/cookies.ts`
+
 Cookie utility functions for SSR-safe cookie handling.
 
 ### `composable/`
+
 Global composables:
+
 - `useDialogState.ts` - Dialog state management
 - `useTheme.ts` - Theme switching (light/dark/system)
 
 ### `context/`
+
 Context-related utilities:
+
 - `useAppSearch.ts` - Global search context
 - `useDirection.ts` - Text direction context
 - `useLayout.ts` - Layout preferences context
@@ -109,11 +127,13 @@ Context-related utilities:
 ## Configuration
 
 ### nuxt.config.ts
+
 - Sets up global CSS
 - Defines shared type aliases
 - Configures auto-imports
 
 ### CSS
+
 - Tailwind CSS v4
 - SVG icon support
 - Animation support
@@ -121,6 +141,7 @@ Context-related utilities:
 ## Plugins
 
 ### ssr-width.ts
+
 Provides SSR-safe window width for responsive components.
 
 ## Database & Server Routes
@@ -141,13 +162,18 @@ Provides SSR-safe window width for responsive components.
 All files in `app/components/`, `app/composables/`, and `app/layouts/` are automatically imported.
 
 ### Components
+
 ```vue
-<Button />              <!-- From ui/button/ -->
-<Badge />               <!-- From ui/badge/ -->
-<BreadCrumbs />         <!-- From fragments/breadcrumbs/ -->
+<Button />
+<!-- From ui/button/ -->
+<Badge />
+<!-- From ui/badge/ -->
+<BreadCrumbs />
+<!-- From fragments/breadcrumbs/ -->
 ```
 
 ### Composables
+
 ```typescript
 const theme = useTheme()           <!-- Auto-imported -->
 const dialogState = useDialogState()  <!-- Auto-imported -->
@@ -177,4 +203,4 @@ const dialogState = useDialogState()  <!-- Auto-imported -->
 
 **Last Updated**: February 2026  
 **Nuxt Version**: 4.3+
-*Last Update at 2026-05-15 19:55:20*
+\_Last Update at 2026-05-15 19:55:20\_

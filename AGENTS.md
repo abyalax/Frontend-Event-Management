@@ -105,4 +105,4 @@ Project docs live in `docs/`.
 - `docs/ui-styles.md`: UI style and token guide
 
 Some older markdown files may contain mojibake from box-drawing/checkmark characters. Keep new documentation ASCII unless there is a clear reason to use Unicode.
-*Last Update at 2026-05-15 19:55:20*
+\_Last Update at 2026-05-15 19:55:20\_

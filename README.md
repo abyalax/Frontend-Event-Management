@@ -1,4 +1,5 @@
 # Nuxt Layers Starter
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 # Quick Start Guide - Nuxt 4 Layers Architecture
@@ -53,6 +54,7 @@ project-root/
 ## Key Concepts
 
 ### 1. Layer Priority (Alphabetical Order)
+
 ```
 shared         → Priority 0 (loaded first)
 1-auth         → Priority 1
@@ -63,11 +65,13 @@ shared         → Priority 0 (loaded first)
 **Lower number = Foundation** | **Higher number = Override**
 
 ### 2. Naming Convention
+
 - Layers: Use hyphens → `1-feature-name`
 - Components: PascalCase → `<AuthCard />`
 - Composables: camelCase → `useAuthStore()`
 
 ### 3. Auto-Imports (No manual import needed!)
+
 ```typescript
 // ✅ Composables: Auto-imported
 const authStore = useAuthStore()
@@ -113,7 +117,7 @@ export function useAuthForm() {
   const form = useForm({
     validationSchema: toTypedSchema(loginSchema)
   })
-  
+
   return {
     form,
     // ... methods
@@ -144,15 +148,15 @@ const { form } = useAuthForm()
 ```typescript
 // layers/1-auth/server/api/auth/login.post.ts
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readBody(event)
-  
+  const { email, password } = await readBody(event);
+
   // Validate & authenticate
-  
+
   return {
     token: 'jwt-token',
-    user: { id: '1', email }
-  }
-})
+    user: { id: '1', email },
+  };
+});
 
 // ✅ Available as POST /api/auth/login
 ```
@@ -161,43 +165,43 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // layers/2-users/app/composables/useUsersStore.ts
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 export const useUsersStore = defineStore('users', () => {
-  const users = ref([])
-  const loading = ref(false)
-  
+  const users = ref([]);
+  const loading = ref(false);
+
   async function fetchUsers() {
-    loading.value = true
+    loading.value = true;
     try {
-      users.value = await $fetch('/api/users')
+      users.value = await $fetch('/api/users');
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
-  
-  return { users, loading, fetchUsers }
-})
+
+  return { users, loading, fetchUsers };
+});
 
 // ✅ Use in any component
-const store = useUsersStore()
-await store.fetchUsers()
+const store = useUsersStore();
+await store.fetchUsers();
 ```
 
 ### Use Form Validation (vee-validate)
 
 ```vue
 <script setup lang="ts">
-import { z } from 'zod'
+import { z } from 'zod';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Min 6 chars')
-})
+  password: z.string().min(6, 'Min 6 chars'),
+});
 
 const { handleSubmit, values } = useForm({
-  validationSchema: toTypedSchema(schema)
-})
+  validationSchema: toTypedSchema(schema),
+});
 </script>
 
 <template>
@@ -214,6 +218,7 @@ const { handleSubmit, values } = useForm({
 ## Important Rules
 
 ### ✅ DO:
+
 - ✅ Keep layers independent
 - ✅ Put feature code in feature layer (not shared)
 - ✅ Use Pinia for state management
@@ -222,6 +227,7 @@ const { handleSubmit, values } = useForm({
 - ✅ Document each layer with CLAUDE.md
 
 ### ❌ DON'T:
+
 - ❌ Create root-level `app/` folder
 - ❌ Mix feature logic with shared layer
 - ❌ Use prop drilling (use Pinia instead)
@@ -252,17 +258,17 @@ pnpm add package      # Add new dependency
 
 ## File Locations Quick Reference
 
-| Type | Location | Auto-Import |
-| --- | --- | --- |
-| Component | `app/components/*.vue` | ✅ Yes |
-| Composable | `app/composables/*.ts` | ✅ Yes |
-| Page | `app/pages/**/*.vue` | ✅ Yes |
-| Layout | `app/layouts/*.vue` | ✅ Yes |
-| Middleware | `app/middleware/*.ts` | ✅ Yes |
-| Plugin | `app/plugins/*.ts` | ✅ Yes |
-| Utility | `app/utils/*.ts` | ❌ No |
-| API Route | `server/api/**/*.ts` | ✅ Yes |
-| Type | Via `#alias` | Via alias |
+| Type       | Location               | Auto-Import |
+| ---------- | ---------------------- | ----------- |
+| Component  | `app/components/*.vue` | ✅ Yes      |
+| Composable | `app/composables/*.ts` | ✅ Yes      |
+| Page       | `app/pages/**/*.vue`   | ✅ Yes      |
+| Layout     | `app/layouts/*.vue`    | ✅ Yes      |
+| Middleware | `app/middleware/*.ts`  | ✅ Yes      |
+| Plugin     | `app/plugins/*.ts`     | ✅ Yes      |
+| Utility    | `app/utils/*.ts`       | ❌ No       |
+| API Route  | `server/api/**/*.ts`   | ✅ Yes      |
+| Type       | Via `#alias`           | Via alias   |
 
 ---
 
@@ -289,6 +295,7 @@ Database / External Service
 ## Layer Documentation
 
 Each layer should have `CLAUDE.md` explaining:
+
 - Layer purpose and features
 - Available components & composables
 - API endpoints
@@ -309,4 +316,4 @@ See existing CLAUDE.md files for templates.
 --
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-*Last Update at 2026-05-15 19:55:20*
+\_Last Update at 2026-05-15 19:55:20\_

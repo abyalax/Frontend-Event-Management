@@ -18,6 +18,7 @@ Table Display = Local Rows + Server Rows
 ```
 
 This separation enables:
+
 - Immediate UI feedback for new records
 - Offline-like experience for create operations
 - Clear distinction between pending and saved data
@@ -28,12 +29,12 @@ This separation enables:
 
 ```typescript
 // Essential state variables
-selectedRows: Array<Row>           // User-selected rows
-isEditMode: boolean               // Edit mode toggle
-editedData: Object<RowId, Row>    // Modified data cache
-originalData: Object<RowId, Row>  // Original data snapshot
-hasChanges: boolean               // Unsaved changes flag
-localRows: Array<Row>             // New records pending creation
+selectedRows: Array<Row>; // User-selected rows
+isEditMode: boolean; // Edit mode toggle
+editedData: Object<RowId, Row>; // Modified data cache
+originalData: Object<RowId, Row>; // Original data snapshot
+hasChanges: boolean; // Unsaved changes flag
+localRows: Array<Row>; // New records pending creation
 ```
 
 #### State Flow
@@ -55,9 +56,9 @@ localRows: Array<Row>             // New records pending creation
 
 ```typescript
 // Row type detection
-isNewRow = (row) => row.isNew === true || row.id.startsWith('tmp-')
-isExistingRow = (row) => !isNewRow(row)
-isEditedRow = (rowId) => editedData[rowId] !== undefined
+isNewRow = (row) => row.isNew === true || row.id.startsWith('tmp-');
+isExistingRow = (row) => !isNewRow(row);
+isEditedRow = (rowId) => editedData[rowId] !== undefined;
 ```
 
 ## CRUD Operations Implementation
@@ -85,7 +86,7 @@ isEditedRow = (rowId) => editedData[rowId] !== undefined
 #### Data Composition
 
 ```typescript
-displayData = [...localRows, ...serverRows]
+displayData = [...localRows, ...serverRows];
 ```
 
 #### Display Logic
@@ -117,11 +118,13 @@ displayData = [...localRows, ...serverRows]
 #### Dual Delete Behavior
 
 **New Rows**:
+
 - Immediate removal from UI
 - No API call required
 - Clean up local state
 
 **Existing Rows**:
+
 - Status toggle (active/inactive)
 - API call for persistence
 - Visual feedback through toggle switch
@@ -134,8 +137,8 @@ displayData = [...localRows, ...serverRows]
 
 ```typescript
 isEditable = (item) => {
-  return (isEditMode && isRowSelected(item) && !isRowNew(item)) || isRowNew(item)
-}
+  return (isEditMode && isRowSelected(item) && !isRowNew(item)) || isRowNew(item);
+};
 ```
 
 #### Input Type Selection
@@ -182,11 +185,8 @@ isEditable = (item) => {
 
 ```typescript
 isCompleteNewRow = (row) => {
-  return isFilled(row.server) && 
-         isFilled(row.material_group) && 
-         isFilled(row.extended_material_group) && 
-         isFilled(row.material_number)
-}
+  return isFilled(row.server) && isFilled(row.material_group) && isFilled(row.extended_material_group) && isFilled(row.material_number);
+};
 ```
 
 #### Business Logic Enforcement
@@ -308,15 +308,15 @@ editedData: {[key: string]: any} = {}
 
 ```javascript
 // State management
-let selectedRows = []
-let isEditMode = false
-let editedData = {}
+let selectedRows = [];
+let isEditMode = false;
+let editedData = {};
 
 // DOM manipulation
 if (isEditable(item)) {
-  element.innerHTML = `<input value="${getEditedValue(item.id, field)}">`
+  element.innerHTML = `<input value="${getEditedValue(item.id, field)}">`;
 } else {
-  element.innerHTML = item[field]
+  element.innerHTML = item[field];
 }
 ```
 
@@ -325,9 +325,10 @@ if (isEditable(item)) {
 This inline CRUD table pattern provides a robust, user-friendly approach to data management. The framework-agnostic design ensures adaptability across different technologies while maintaining consistent user experience and data integrity principles.
 
 The key success factors are:
+
 - Clear state management
 - Intuitive user interactions
 - Robust error handling
 - Performance optimization
 - Framework flexibility
-*Last Update at 2026-05-15 19:55:20*
+  \_Last Update at 2026-05-15 19:55:20\_

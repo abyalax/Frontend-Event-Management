@@ -38,4 +38,4 @@ pnpm test:e2e
 - Keep feature documentation near the feature when it is only useful for that feature.
 - Keep shared conventions in this directory or in `AGENTS.md` when they help future coding sessions.
 - New markdown should use ASCII punctuation to avoid the encoding issues visible in some older docs.
-*Last Update at 2026-05-15 19:55:20*
+  \_Last Update at 2026-05-15 19:55:20\_
